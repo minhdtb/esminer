@@ -1,0 +1,10 @@
+.idea
+logs
+*.log
+bower_components
+node_modules/
+releases
+dist
+
+
+
