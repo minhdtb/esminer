@@ -21,7 +21,8 @@ module.exports = merge(baseWebpackConfig, {
     plugins: [
         new CopyWebpackPlugin([
             {from: './source/package.json', to: '.'},
-            {from: './static', to: 'static'}
+            {from: './static', to: 'static'},
+            {from: './claymore', to: 'claymore'}
         ]),
         new webpack.DefinePlugin({
             'process.env': {

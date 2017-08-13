@@ -23,7 +23,10 @@ module.exports = {
         loaders: [
             {
                 test: /\.vue$/,
-                loader: 'vue-loader'
+                loader: 'vue-loader',
+                options: {
+                    optimizeSSR: false
+                }
             },
             {
                 test: /\.js$/,

@@ -1,26 +1,41 @@
-// This is main process of Electron, started as first thing when your
-// app starts. This script is running through entire life of your application.
-// It doesn't have any windows which you can see on screen, but we can open
-// window from here.
-
 import {app, BrowserWindow} from 'electron'
 import path from 'path'
+import {ipcMain} from 'electron'
 
-let mainWindow
+const exec = require('child_process').exec;
+let claymoreProcess;
+
+function execClaymore(sender, params) {
+    let execDir = path.resolve(__dirname, 'claymore');
+
+    claymoreProcess = exec('start /i /wait EthDcrMiner64.exe ' + params.join(' '), {
+        cwd: execDir
+    });
+
+    claymoreProcess.on('close', function () {
+        sender.send('response', {
+            status: 'stopped'
+        });
+    });
+
+    sender.send('response', {
+        status: 'running'
+    });
+}
 
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 768
-    })
+    let mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600
+    });
 
-    // Load the HTML file directly from the webpack dev server if
-    // hot reload is enabled, otherwise load the local file.
     const mainURL = process.env.HOT
         ? `http://localhost:${process.env.PORT}/main.html`
-        : 'file://' + path.join(__dirname, 'main.html')
+        : 'file://' + path.join(__dirname, 'main.html');
 
-    mainWindow.loadURL(mainURL)
+    mainWindow.setResizable(false);
+    mainWindow.setMaximizable(false);
+    mainWindow.loadURL(mainURL);
 
     if (process.env.NODE_ENV !== 'production') {
         mainWindow.openDevTools()
@@ -28,9 +43,18 @@ app.on('ready', () => {
 
     mainWindow.on('closed', () => {
         mainWindow = null
+    });
+
+    ipcMain.on('command', (event, data) => {
+        if (data.command === 'start-mining') {
+            execClaymore(event.sender, ['-epool', 'eth-eu1.nanopool.org:9999', '-ewal', '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12']);
+        } else if (data.command === 'stop-mining') {
+            exec('taskkill /PID ' + claymoreProcess.pid + ' /T /F');
+            claymoreProcess = null;
+        }
     })
-})
+});
 
 app.on('window-all-closed', () => {
     app.quit()
-})
+});
