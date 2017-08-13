@@ -6,7 +6,7 @@ let config = require('../config');
 
 module.exports = merge(webpackBaseConfig, {
     entry: {
-        background: './source/background.js'
+        background: './source/server/main.js'
     },
     devtool: '#source-map',
     output: {

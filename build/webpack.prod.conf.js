@@ -10,8 +10,8 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = merge(baseWebpackConfig, {
     entry: {
-        app: './source/main.js',
-        background: './source/background.js'
+        app: './source/client/main.js',
+        background: './source/server/main.js'
     },
     devtool: config.build.productionSourceMap ? '#source-map' : false,
     output: {
@@ -38,7 +38,7 @@ module.exports = merge(baseWebpackConfig, {
         new ExtractTextPlugin(path.join(config.build.assetsSubDirectory, '[name].css')),
         new HtmlWebpackPlugin({
             filename: 'main.html',
-            template: './source/main.html',
+            template: './source/client/main.html',
             excludeChunks: ['background'],
             inject: true,
             minify: {

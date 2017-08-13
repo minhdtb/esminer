@@ -10,7 +10,7 @@ let webpackConfig = merge(webpackBaseConfig, {
     entry: {
         app: [
             './build/dev-client?path=' + devServerUrl + '__webpack_hmr&noInfo=true&reload=true',
-            './source/main.js'
+            './source/client/main.js'
         ]
     },
     devtool: '#source-map',
@@ -28,7 +28,7 @@ let webpackConfig = merge(webpackBaseConfig, {
         new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             filename: 'main.html',
-            template: './source/main.html',
+            template: './source/client/main.html',
             excludeChunks: ['devtools'],
             inject: true
         })
