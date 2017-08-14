@@ -1,10 +1,12 @@
 import {app, BrowserWindow, ipcMain} from 'electron'
 import path from 'path'
 
+const _ = require('lodash');
 const socket = require('net');
-let claymoreSocket;
 const exec = require('child_process').exec;
+
 let claymoreProcess;
+let claymoreSocket;
 
 function execClaymore(sender, params) {
     let execDir = path.resolve(__dirname, 'claymore');
@@ -24,7 +26,10 @@ function execClaymore(sender, params) {
     });
 }
 
-function connectToClaymore() {
+function connectToClaymore(sender) {
+    if (!claymoreProcess)
+        return;
+
     claymoreSocket = socket.Socket();
     claymoreSocket.setEncoding('ascii');
 
@@ -46,7 +51,7 @@ function connectToClaymore() {
     });
 
     claymoreSocket.on('data', d => {
-        processData(d)
+        processData(sender, d)
     });
 
     claymoreSocket.on('close', () => {
@@ -64,9 +69,60 @@ function killClaymore() {
     claymoreProcess = null;
 }
 
-function processData(data) {
-    //  {"id": 0, "error": null, "result": ["9.7 - ETH", "4", "21102;2;0", "21102", "0;0;0", "off", "60;60", "eth-eu1.nanopool.org:9999", "0;0;0;0"]}
-    console.log(data);
+function processData(sender, data) {
+    if (!data)
+        return;
+
+    let info0 = data.result[2].split(';');
+
+    let info1 = data.result[3].split(';');
+
+    let info2 = data.result[4].split(';');
+
+    let info3 = data.result[5].split(';');
+
+    let info4 = data.result[6].split(';');
+    info4 = _.reduce(info4, (result, value, index) => {
+        if (index % 2 === 0)
+            result.push(info4.slice(index, index + 2));
+
+        return result;
+    }, []);
+
+    let info5 = data.result[8].split(';');
+
+    let gpuInfo = _.map(info1, (item, i) => {
+        return {
+            hashRate: parseInt(item),
+            hashRateDCR: info3[i] === 'off' ? 'off' : parseInt(info3[i]),
+            temperature: parseInt(info4[i][0]),
+            fanSpeed: parseInt(info4[i][1])
+        }
+    });
+
+    let dataInfo = data.error ? {
+        error: data.error
+    } : {
+        version: data.result[0],
+        runningTime: parseInt(data.result[1]),
+        totalHashRate: parseInt(info0[0]),
+        numberOfShare: parseInt(info0[1]),
+        numberOfRejected: parseInt(info0[2]),
+        totalDCRHashRate: parseInt(info2[0]),
+        numberOfDCRShare: parseInt(info2[1]),
+        numberOfDCRRejected: parseInt(info2[2]),
+        numberOfInvalidShare: parseInt(info5[0]),
+        numberOfPoolSwitches: parseInt(info5[1]),
+        numberOfDCRInvalidShare: parseInt(info5[2]),
+        numberOfDCRPoolSwitches: parseInt(info5[3]),
+        pools: data.result[7].split(';'),
+        gpuInfo: gpuInfo
+    };
+
+    sender.send('response', {
+        status: 'stat',
+        stat: dataInfo
+    });
 }
 
 app.on('ready', () => {
@@ -94,7 +150,7 @@ app.on('ready', () => {
     ipcMain.on('command', (event, data) => {
         if (data.command === 'start-mining') {
             execClaymore(event.sender, ['-epool', 'eth-eu1.nanopool.org:9999', '-ewal', '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12']);
-            connectToClaymore();
+            connectToClaymore(event.sender);
         } else if (data.command === 'stop-mining') {
             killClaymore();
         }
@@ -103,5 +159,7 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
     killClaymore();
+    claymoreProcess = null;
+
     app.quit()
 });

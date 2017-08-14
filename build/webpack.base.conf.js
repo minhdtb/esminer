@@ -5,7 +5,10 @@ let config = require('../config');
 module.exports = {
     output: {
         path: config.build.outputRoot,
-        filename: '[name].js'
+        filename: '[name].[hash:8].js'
+    },
+    performance: {
+        hints: false
     },
     target: 'node',
     node: {

@@ -11,6 +11,7 @@ let port = process.env.PORT || config.dev.port;
 let proxyTable = config.dev.proxyTable;
 let devMiddleware = require('webpack-dev-middleware')(compiler, {
     publicPath: webpackConfig.output.publicPath,
+    noInfo: true,
     stats: {
         colors: true,
         chunks: false
