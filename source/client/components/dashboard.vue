@@ -203,7 +203,16 @@
 
                 _.each(this.gpuList, (gpu) => {
                     $.plot('#gpu-temp-' + gpu.id, [getPlotArray(0)], {
-                        height: 100,
+                        colors: ['#e80b1a'],
+                        series: {
+                            lines: {
+                                show: true,
+                                lineWidth: 1
+                            },
+                            points: {
+                                show: false
+                            }
+                        },
                         yaxis: {
                             min: 0,
                             max: 100,

@@ -3,6 +3,12 @@
         <v-tabs dark v-model="active">
             <v-tabs-bar slot="activators" class="red">
                 <v-tabs-item v-for="tab in tabs" :key="tab" :href="'#' + tab" ripple>
+                    <v-icon v-if="tab === 'dashboard'" style="margin-top: 3px">
+                        fa-home fa-lg fa-fw
+                    </v-icon>
+                    <v-icon v-else style="margin-top: 3px">
+                        fa-cog fa-lg fa-fw
+                    </v-icon>
                     {{ tab }}
                 </v-tabs-item>
                 <v-tabs-slider class="yellow"></v-tabs-slider>
