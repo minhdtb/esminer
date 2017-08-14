@@ -9,10 +9,10 @@
     "dev:server": "node build/dev-server.js",
     "dev:client": "cross-env HOT=1 webpack --hide-modules --config build/webpack.dev-background.conf.js && cross-env HOT=1 electron",
     "build": "rimraf dist && mkdirp dist && cross-env NODE_ENV=production webpack --progress --hide-modules --config build/webpack.prod.conf.js",
-    "package": "rimraf releases && node build/package.js --asar=true",
-    "package:osx": "rimraf releases && node build/package.js --platform=darwin --arch=x64 --asar=true",
-    "package:win": "rimraf releases && node build/package.js --platform=win32 --asar=true",
-    "package:linux": "rimraf releases && node build/package.js --platform=linux --asar=true"
+    "package": "rimraf releases && node build/package.js",
+    "package:osx": "rimraf releases && node build/package.js --platform=darwin --arch=x64",
+    "package:win": "rimraf releases && node build/package.js --platform=win32",
+    "package:linux": "rimraf releases && node build/package.js --platform=linux"
   },
   "author": "minhdtb",
   "license": "MIT",

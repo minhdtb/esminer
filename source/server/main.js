@@ -182,8 +182,10 @@ app.on('ready', () => {
         } else if (data.command === 'stop-mining') {
             killClaymore();
         } else if (data.command === 'get-config') {
-            let configs = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
-            event.sender.send('config', configs)
+            if (fs.existsSync(CONFIG_FILE)) {
+                let configs = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
+                event.sender.send('config', configs)
+            }
         }
     })
 });
