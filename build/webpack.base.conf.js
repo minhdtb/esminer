@@ -1,11 +1,12 @@
-let path = require('path');
-let webpack = require('webpack');
-let config = require('../config');
+const path = require('path');
+const webpack = require('webpack');
+const config = require('../config');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
     output: {
         path: config.build.outputRoot,
-        filename: '[name].[hash:8].js'
+        filename: '[name].js'
     },
     performance: {
         hints: false
@@ -28,7 +29,20 @@ module.exports = {
                 test: /\.vue$/,
                 loader: 'vue-loader',
                 options: {
-                    optimizeSSR: false
+                    loaders: [
+                        {
+                            css: ExtractTextPlugin.extract({
+                                use: 'css-loader',
+                                fallback: 'vue-style-loader'
+                            })
+                        }
+                    ],
+                    preserveWhitespace: false,
+                    postcss: [
+                        require('autoprefixer')({
+                            browsers: ['last 3 versions']
+                        })
+                    ]
                 }
             },
             {
@@ -58,6 +72,7 @@ module.exports = {
         ]
     },
     plugins: [
+        new ExtractTextPlugin("style.css"),
         new webpack.ExternalsPlugin('commonjs2', [
             'desktop-capturer',
             'electron',

@@ -65,6 +65,9 @@ function connectToClaymore(sender) {
 }
 
 function killClaymore() {
+    if (!claymoreProcess)
+        return;
+
     exec('taskkill /PID ' + claymoreProcess.pid + ' /T /F');
     claymoreProcess = null;
 }
@@ -119,16 +122,13 @@ function processData(sender, data) {
         gpuInfo: gpuInfo
     };
 
-    sender.send('response', {
-        status: 'stat',
-        stat: dataInfo
-    });
+    sender.send('state', dataInfo);
 }
 
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600
+        width: 1000,
+        height: 700
     });
 
     const mainURL = process.env.HOT
@@ -159,7 +159,5 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
     killClaymore();
-    claymoreProcess = null;
-
     app.quit()
 });

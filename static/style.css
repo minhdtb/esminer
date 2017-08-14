@@ -1,0 +1,31 @@
+body {
+    /*overflow: hidden;*/
+}
+
+.tickLabel {
+    color: white !important
+}
+
+.totalHashRate {
+    margin-bottom: 0;
+    text-shadow: 2px 2px #2a2a2a;
+    transition: opacity 0.5s linear;
+    -webkit-font-smoothing: antialiased;
+}
+
+.totalHashRateUnit {
+    margin-bottom: 0;
+    margin-left: 10px;
+}
+
+.rate {
+    padding: 10px;
+}
+
+.table-gpu {
+
+}
+
+.table-gpu td {
+    padding-left: 5px;
+}
