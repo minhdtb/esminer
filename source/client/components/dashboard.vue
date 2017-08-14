@@ -151,6 +151,17 @@
         },
         mounted() {
             ipcRenderer.on('state', (event, data) => {
+                this.totalHashRate = data.totalHashRate;
+                this.totalShare = data.totalShare;
+                this.gpuList = _.map(data.gpuInfo, function (item, i) {
+                    return {
+                        id: i,
+                        hashRate: item.hashRate / 1000,
+                        temperature: item.temperature,
+                        fanSpeed: item.fanSpeed
+                    }
+                });
+
                 updateHashRatePlot(data.totalHashRate / 1000);
             });
 
