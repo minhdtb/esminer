@@ -22,7 +22,7 @@
                         </tr>
                         <tr>
                             <td style="text-align: center">
-                                <h2 class="totalHashRate" style="color: royalblue">{{totalShare}}</h2>
+                                <h2 class="totalHashRate" style="color: skyblue">{{totalShare}}</h2>
                             </td>
                             <td>
                                 <h5 class="totalHashRateUnit" style="color: plum;">Shares</h5>
@@ -38,26 +38,27 @@
             <v-flex xs2 v-for="gpu in gpuList" :key='gpu.id'>
                 <v-card height="260px">
                     <v-card-media>
-                        <div :id="'gpu-temp-' + gpu.id" style="height: 150px;"></div>
+                        <div :id="'gpu-temp-' + gpu.id" style="height: 150px; margin: 5px"></div>
                         <table class="table-gpu">
                             <tbody>
                             <tr>
-                                <td style="color: gainsboro; text-align: right">Rate</td>
+                                <td style="color: #f3f3f3; text-align: right">Rate</td>
                                 <td style="text-align: center"><h5 class="totalHashRate" style="color: orangered">
                                     {{gpu.hashRate}}</h5>
                                 </td>
                                 <td style="color: plum;">MH/s</td>
                             </tr>
                             <tr>
-                                <td style="color: gainsboro; text-align: right">Temp</td>
+                                <td style="color: #f3f3f3; text-align: right">Temp</td>
                                 <td style="text-align: center"><h5 class="totalHashRate" style="color: red">
                                     {{gpu.temperature}}</h5></td>
                                 <td style="color: plum;">°C</td>
                             </tr>
                             <tr>
-                                <td style="color: gainsboro; text-align: right">Fan</td>
-                                <td style="text-align: center"><h5 class="totalHashRate" style="color: green">
-                                    {{gpu.fanSpeed}}</h5></td>
+                                <td style="color: #f3f3f3; text-align: right">Fan</td>
+                                <td style="text-align: center">
+                                    <h5 class="totalHashRate" style="color: lightgreen">{{gpu.fanSpeed}}</h5>
+                                </td>
                                 <td style="color: plum;">%</td>
                             </tr>
                             </tbody>
@@ -68,8 +69,10 @@
         </v-layout>
         <v-layout row>
             <v-flex>
-                <v-card height="90px">
-
+                <v-card height="90px" style="padding: 5px; text-align: right">
+                    <div v-for="pool in pools" class="totalHashRate" style="color: #f5b643; font-size: medium">{{pool}}</div>
+                    <div class="totalHashRate" style="color: whitesmoke; font-size: medium">Version : {{version}}</div>
+                    <div class="totalHashRate" style="color: #8888f5; font-size: medium">Running Time : {{runningTime}}</div>
                 </v-card>
             </v-flex>
         </v-layout>
@@ -78,32 +81,22 @@
 <script>
     import {ipcRenderer} from 'electron'
     import _ from 'lodash'
+    import moment from 'moment'
 
-    let data1 = [];
     let totalPoints1 = 200;
+    let totalPoints2 = 50;
 
-    function getPlotArray1(value, max) {
-        if (data1.length > 0)
-            data1 = data1.slice(1);
+    function getPlotData(data, value, total) {
+        if (data.length > 0)
+            data = data.slice(1);
 
-        while (data1.length < totalPoints1) {
-            let y = value;
-
-            if (y < 0) {
-                y = 0;
-            } else if (y > max) {
-                y = max;
-            }
-
-            data1.push(y);
+        while (data.length < total) {
+            data.push([0, value]);
         }
 
-        let res = [];
-        for (let i = 0; i < data1.length; ++i) {
-            res.push([i, data1[i]])
-        }
-
-        return res;
+        return _.map(data, (item, i) => {
+            return [i, item[1]]
+        });
     }
 
     export default {
@@ -119,7 +112,10 @@
                     {id: 3, hashRate: 0, temperature: 0, fanSpeed: 0},
                     {id: 4, hashRate: 0, temperature: 0, fanSpeed: 0},
                     {id: 5, hashRate: 0, temperature: 0, fanSpeed: 0}
-                ]
+                ],
+                pools: [],
+                version: null,
+                runningTime: null
             }
         },
         mounted() {
@@ -135,6 +131,10 @@
                     }
                 });
 
+                this.pools = data.pools;
+                this.version = data.version;
+                this.runningTime = moment.duration(data.runningTime, 'minutes').humanize();
+
                 if (!this.$store.state.running) {
                     this.$store.commit('SET_RUNNING', true)
                 }
@@ -145,8 +145,8 @@
             let hashRatePlot;
             let tempPlotList = [];
             setTimeout(() => {
-                hashRatePlot = $.plot('#total-hash-rate', [getPlotArray1(0)], {
-                    colors: ['#e8a028'],
+                hashRatePlot = $.plot('#total-hash-rate', [getPlotData([], 0, totalPoints1)], {
+                    colors: ['#FF4500'],
                     series: {
                         lines: {
                             show: true,
@@ -167,7 +167,7 @@
                     grid: {
                         borderColor: '#c6c6c6',
                         borderWidth: 1,
-                        labelMargin: 15
+                        labelMargin: 10
                     },
                     yaxis: {
                         min: 0,
@@ -180,8 +180,8 @@
                 });
 
                 tempPlotList = _.map(this.gpuList, (gpu) => {
-                    return $.plot('#gpu-temp-' + gpu.id, [getPlotArray1(0)], {
-                        colors: ['#e80b1a'],
+                    return $.plot('#gpu-temp-' + gpu.id, [getPlotData([], 0, totalPoints2)], {
+                        colors: ['#FF0000', '90EE90'],
                         series: {
                             lines: {
                                 show: true,
@@ -190,6 +190,11 @@
                             points: {
                                 show: false
                             }
+                        },
+                        grid: {
+                            borderColor: '#c6c6c6',
+                            borderWidth: 1,
+                            labelMargin: 10
                         },
                         yaxis: {
                             min: 0,
@@ -201,14 +206,21 @@
                         }
                     });
                 });
-            }, 100);
+            }, 200);
 
             function updatePlot(value, gpuList) {
-                hashRatePlot.setData([getPlotArray1(value)]);
-                hashRatePlot.draw();
+                if (hashRatePlot) {
+                    let olData = hashRatePlot.getData()[0].data;
+                    hashRatePlot.setData([getPlotData(olData, value, totalPoints1)]);
+                    hashRatePlot.draw();
+                }
+
                 _.each(gpuList, (gpu, i) => {
-                    //tempPlotList[i].setData([getPlotArray1(gpu.temperature)]);
-                    //tempPlotList[i].draw();
+                    if (tempPlotList[i]) {
+                        let olData = tempPlotList[i].getData()[0].data;
+                        tempPlotList[i].setData([getPlotData(olData, gpu.temperature, totalPoints2)]);
+                        tempPlotList[i].draw();
+                    }
                 });
             }
         }
