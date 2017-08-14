@@ -43,7 +43,7 @@ function connectToClaymore(sender) {
                 method: "miner_getstat1"
             }));
 
-            setTimeout(ping, 100);
+            setTimeout(ping, 300);
         }
     }
 
@@ -53,12 +53,14 @@ function connectToClaymore(sender) {
     });
 
     claymoreSocket.on('data', d => {
-        processData(sender, d)
+        processData(sender, JSON.parse(d))
     });
 
     claymoreSocket.on('close', () => {
         claymoreSocket.isConnected = false;
-        setTimeout(connectToClaymore, 1000);
+        setTimeout(() => {
+            connectToClaymore(sender)
+        }, 1000);
     });
 
     claymoreSocket.on('error', (e) => {

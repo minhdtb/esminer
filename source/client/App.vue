@@ -2,7 +2,8 @@
     <v-app dark style="padding: 10px">
         <v-tabs dark v-model="active">
             <v-tabs-bar slot="activators" class="red">
-                <v-tabs-item v-for="tab in tabs" :key="tab" :href="'#' + tab" ripple>
+                <v-tabs-item :disabled="tab === 'configuration'? isRunning: false" v-for="tab in tabs" :key="tab"
+                             :href="'#' + tab" ripple>
                     <v-icon v-if="tab === 'dashboard'" style="margin-top: 3px">
                         fa-home fa-lg fa-fw
                     </v-icon>
@@ -53,6 +54,9 @@
         },
         computed: {
             isRunning() {
+                if (this.$store.state.running)
+                    this.active = 'dashboard';
+
                 return this.$store.state.running;
             }
         },
