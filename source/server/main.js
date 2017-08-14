@@ -128,7 +128,7 @@ function processData(sender, data) {
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
         width: 1000,
-        height: 700
+        height: 750
     });
 
     const mainURL = process.env.HOT

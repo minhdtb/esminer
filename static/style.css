@@ -1,5 +1,9 @@
 body {
-    /*overflow: hidden;*/
+    overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 .tickLabel {
@@ -18,7 +22,7 @@ body {
     margin-left: 10px;
 }
 
-.rate {
+.table-hash-rate {
     padding: 10px;
 }
 
