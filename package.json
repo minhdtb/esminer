@@ -23,7 +23,8 @@
     "rimraf": "^2.6.1",
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
-    "vuetify": "^0.14.10"
+    "vuetify": "^0.14.10",
+    "vuex": "^2.3.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

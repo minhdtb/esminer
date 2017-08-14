@@ -3,7 +3,9 @@ import path from 'path'
 
 const _ = require('lodash');
 const socket = require('net');
+const fs = require('fs');
 const exec = require('child_process').exec;
+const CONFIG_FILE = './config.json';
 
 let claymoreProcess;
 let claymoreSocket;
@@ -125,6 +127,27 @@ function processData(sender, data) {
     sender.send('state', dataInfo);
 }
 
+function getConfig() {
+    let config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
+
+    let r = _.filter(_.map(_.keys(config), (key) => {
+        let value = config[key];
+        if (!value && key === 'epool') {
+            value = 'eth-eu2.nanopool.org:9999'
+        }
+
+        if (!value && key === 'ewal') {
+            value = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12'
+        }
+
+        return ['-' + key, value]
+    }), (items) => {
+        return !!items[1]
+    });
+
+    return _.flatten(r);
+}
+
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
         width: 1000,
@@ -149,10 +172,18 @@ app.on('ready', () => {
 
     ipcMain.on('command', (event, data) => {
         if (data.command === 'start-mining') {
-            execClaymore(event.sender, ['-epool', 'eth-eu1.nanopool.org:9999', '-ewal', '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12']);
+            /* save config */
+            fs.writeFileSync(CONFIG_FILE, JSON.stringify(data.config, null, 2), 'utf-8');
+
+            /* start claymore */
+            let configs = getConfig();
+            execClaymore(event.sender, configs);
             connectToClaymore(event.sender);
         } else if (data.command === 'stop-mining') {
             killClaymore();
+        } else if (data.command === 'get-config') {
+            let configs = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
+            event.sender.send('config', configs)
         }
     })
 });

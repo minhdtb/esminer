@@ -10,15 +10,17 @@
             <v-tabs-content id="dashboard">
                 <dashboard></dashboard>
             </v-tabs-content>
-            <v-tabs-content id="configuration" style="height: 580px"></v-tabs-content>
+            <v-tabs-content id="configuration" style="height: 580px">
+                <configuration></configuration>
+            </v-tabs-content>
         </v-tabs>
         <v-layout row style="text-align: center">
             <v-flex md4 offset-md4>
-                <v-btn v-if="!running" primary style="width: 200px" @click="start()">
+                <v-btn v-if="!isRunning" primary style="width: 200px" @click="start()">
                     <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
                     START MINING
                 </v-btn>
-                <v-btn v-if="running" error style="width: 200px" @click="stop()">
+                <v-btn v-if="isRunning" error style="width: 200px" @click="stop()">
                     <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
                     STOP MINING
                 </v-btn>
@@ -30,26 +32,35 @@
 <script>
     import {ipcRenderer} from 'electron'
     import dashboard from './components/dashboard.vue'
+    import configuration from './components/configuration.vue'
 
     export default {
         components: {
-            dashboard
+            dashboard,
+            configuration
         },
         data() {
             return {
                 tabs: ['dashboard', 'configuration'],
-                active: null,
-                running: false
+                active: null
+            }
+        },
+        computed: {
+            isRunning() {
+                return this.$store.state.running;
             }
         },
         mounted() {
             ipcRenderer.on('response', (event, data) => {
-                this.running = (data.status === 'running')
+                this.$store.commit('SET_RUNNING', (data.status === 'running'));
             });
         },
         methods: {
             start() {
-                ipcRenderer.send('command', {command: 'start-mining'});
+                ipcRenderer.send('command', {
+                    command: 'start-mining',
+                    config: this.$store.state.config
+                });
             },
             stop() {
                 ipcRenderer.send('command', {command: 'stop-mining'});
