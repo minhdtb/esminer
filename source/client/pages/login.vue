@@ -4,14 +4,21 @@
             <v-flex sm8 offset-sm2>
                 <v-card style="padding: 15px; text-align: center">
                     <v-layout row>
-                        <v-flex sm12 style="text-align: center">
+                        <v-flex sm12>
                             <img src="static/images/logo.png" style="width: 180px">
-                            <v-text-field label="Username" placeholder="Username" prepend-icon="fa-user fa-lg">
+                            <v-text-field label="Username" placeholder="Username"
+                                          v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
                             </v-text-field>
-                            <v-text-field label="Password" placeholder="Password" prepend-icon="fa-lock fa-lg"
+                            <v-text-field label="Password" placeholder="Password"
+                                          v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
                                           type="password">
                             </v-text-field>
-                            <v-btn primary style="width: 200px">
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex sm12 style="text-align: center">
+                            <span class="error" v-for="error in errors">{{error}}</span><br>
+                            <v-btn primary style="width: 200px" @click="submit">
                                 <v-icon>fa-sign-in fa-lg fa-fw</v-icon>
                                 Login
                             </v-btn>
@@ -30,8 +37,43 @@
 </template>
 <script>
     export default {
+        data() {
+            return {
+                errors: [],
+                username: null,
+                password: null,
+                rules: {
+                    username: (v) => {
+                        return !!v || 'Username is required.';
+                    },
+                    password: (v) => {
+                        return !!v || 'Password is required.';
+                    }
+                }
+            }
+        },
         mounted() {
 
+        },
+        methods: {
+            submit() {
+                this.errors = [];
+                if (this.username && this.password) {
+                    this.$store.dispatch('LOGIN', {
+                        username: this.username,
+                        password: this.password
+                    }).then(response => {
+                        let user = response.data;
+                        if (user) {
+                            localStorage.setItem('authUser', JSON.stringify(user));
+                            this.$store.commit('SET_AUTH', user);
+                            this.$router.push('/')
+                        }
+                    }).catch(e => {
+                        this.errors.push(e.response.data);
+                    });
+                }
+            }
         }
     }
 </script>

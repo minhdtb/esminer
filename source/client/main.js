@@ -2,17 +2,16 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
-import VeeValidate from 'vee-validate';
 
 import App from './App.vue'
 import Home from './pages/home.vue'
 import Login from './pages/login.vue'
 import Register from './pages/register.vue'
+import axios from 'axios'
 
 Vue.use(VueRouter);
 Vue.use(Vuetify);
 Vue.use(Vuex);
-Vue.use(VeeValidate);
 
 const routes = [
     {path: '/login', component: Login},
@@ -39,6 +38,11 @@ const store = new Vuex.Store({
             dcoin: 'sc'
         }
     },
+    actions: {
+        LOGIN(state, credentials) {
+            return axios.post('http://localhost:3000/api/login', credentials);
+        }
+    },
     mutations: {
         SET_AUTH(state, user) {
             state.authUser = user;
@@ -57,10 +61,10 @@ const store = new Vuex.Store({
     }
 });
 
-const isAuthRoute = route => route.fullPath.indexOf('/login') !== -1 || route.fullPath.indexOf('/register') !== -1 ;
+const isAuthRoute = route => route.fullPath.indexOf('/login') !== -1 || route.fullPath.indexOf('/register') !== -1;
 const loadFromLocalStorage = () => {
     if (window.localStorage) {
-        let user = window.localStorage.getItem('authUser');
+        let user = JSON.parse(window.localStorage.getItem('authUser'));
         if (user) {
             store.commit('SET_AUTH', user);
             return true;
