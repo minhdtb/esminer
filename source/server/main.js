@@ -138,7 +138,8 @@ function getParams() {
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
         width: WINDOW_WIDTH,
-        height: WINDOW_HEIGHT
+        height: WINDOW_HEIGHT,
+        icon: path.resolve(__dirname, '../static/images/logo.ico')
     });
 
     const mainURL = process.env.HOT

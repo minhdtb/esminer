@@ -3,6 +3,7 @@ let packager = require('electron-packager');
 let appManifest = require('../source/package.json');
 let devManifest = require('../package.json');
 let config = require('../config');
+const path = require('path');
 
 function getElectronVersion() {
     let v = config.release.electronVersion ||
@@ -27,6 +28,7 @@ let packagerConfig = {
     platform: argv.platform || config.release.platform,
     arch: argv.arch || 'all',
     prune: true,
+    icon: path.resolve(__dirname, '../static/images/logo.ico'),
     overwrite: true,
     ignore: Object.keys((appManifest.devDependencies || {})).map(function (name) {
         return '/node_modules/' + name + '($|/)'
