@@ -21,18 +21,16 @@
                 <configuration></configuration>
             </v-tabs-content>
         </v-tabs>
-        <v-layout row style="text-align: center">
-            <v-flex md4 offset-md4>
-                <v-btn v-if="!isRunning" primary style="width: 200px" @click="start()">
-                    <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
-                    START MINING
-                </v-btn>
-                <v-btn v-if="isRunning" error style="width: 200px" @click="stop()">
-                    <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
-                    STOP MINING
-                </v-btn>
-            </v-flex>
-        </v-layout>
+        <v-btn v-if="!isRunning" primary style="width: 250px; position: absolute; left:4px" @click="start()">
+            <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
+            START MINING
+        </v-btn>
+        <v-btn v-if="isRunning" error style="width: 250px; position: absolute; left: 4px" @click="stop()">
+            <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
+            STOP MINING
+        </v-btn>
+
+        <v-btn style="position: absolute; left: 876px" warning @click="logout">Logout</v-btn>
     </div>
 </template>
 <script>
@@ -75,6 +73,12 @@
                 ipcRenderer.send('command:request', {
                     command: 'stop'
                 });
+            },
+            logout() {
+                localStorage.removeItem('authUser');
+                this.$store.commit('SET_AUTH', null);
+                this.$router.push('/login');
+
             }
         }
     }

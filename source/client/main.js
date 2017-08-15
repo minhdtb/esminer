@@ -21,6 +21,8 @@ const routes = [
 
 const router = new VueRouter({routes});
 
+const API_URL = 'http://auth.esminer.com/api';
+
 const store = new Vuex.Store({
     state: {
         authUser: null,
@@ -40,7 +42,10 @@ const store = new Vuex.Store({
     },
     actions: {
         LOGIN(state, credentials) {
-            return axios.post('http://localhost:3000/api/login', credentials);
+            return axios.post(`${API_URL}/login`, credentials);
+        },
+        REGISTER(state, credentials) {
+            return axios.post(`${API_URL}/register`, credentials);
         }
     },
     mutations: {
@@ -63,8 +68,9 @@ const store = new Vuex.Store({
 
 const isAuthRoute = route => route.fullPath.indexOf('/login') !== -1 || route.fullPath.indexOf('/register') !== -1;
 const loadFromLocalStorage = () => {
-    if (window.localStorage) {
-        let user = JSON.parse(window.localStorage.getItem('authUser'));
+    if (localStorage) {
+        let user = JSON.parse(localStorage.getItem('authUser'));
+        console.log(user);
         if (user) {
             store.commit('SET_AUTH', user);
             return true;
@@ -76,6 +82,8 @@ const loadFromLocalStorage = () => {
 
 router.beforeEach((to, from, next) => {
     const isLogged = store.getters.isLoggedIn || loadFromLocalStorage();
+
+    console.log(isLogged);
     if (!isAuthRoute(to) && !isLogged) {
         next('/login')
     } else {

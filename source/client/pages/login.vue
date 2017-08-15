@@ -1,62 +1,67 @@
 <template>
-    <v-container>
-        <v-layout row style="margin-top: 50px">
-            <v-flex sm8 offset-sm2>
-                <v-card style="padding: 15px; text-align: center">
-                    <v-layout row>
-                        <v-flex sm12>
-                            <img src="static/images/logo.png" style="width: 180px">
-                            <v-text-field label="Username" placeholder="Username"
-                                          v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
-                            </v-text-field>
-                            <v-text-field label="Password" placeholder="Password"
-                                          v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
-                                          type="password">
-                            </v-text-field>
-                        </v-flex>
-                    </v-layout>
-                    <v-layout row>
-                        <v-flex sm12 style="text-align: center">
-                            <span class="error" v-for="error in errors">{{error}}</span><br>
-                            <v-btn primary style="width: 200px" @click="submit">
-                                <v-icon>fa-sign-in fa-lg fa-fw</v-icon>
-                                Login
-                            </v-btn>
-                        </v-flex>
-                    </v-layout>
-                    <v-layout row>
-                        <v-flex sm12 style="text-align: center">
-                            <router-link to="/register" style="margin-right: 5px">Register</router-link>
-                            <router-link to="/" style="margin-left: 5px">Forgot Password</router-link>
-                        </v-flex>
-                    </v-layout>
-                </v-card>
-            </v-flex>
-        </v-layout>
-    </v-container>
+    <v-layout row style="margin-top: 50px">
+        <v-flex sm6 offset-sm3 style="padding: 10px">
+            <v-card style="padding: 25px; text-align: center">
+                <v-layout row>
+                    <v-flex sm12>
+                        <img src="static/images/logo.png" style="width: 180px">
+                        <v-text-field label="Username" placeholder="Username" @blur="blur" @focus="focus"
+                                      v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
+                        </v-text-field>
+                        <v-text-field label="Password" placeholder="Password" @blur="blur" @focus="focus"
+                                      v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
+                                      type="password">
+                        </v-text-field>
+                    </v-flex>
+                </v-layout>
+                <v-layout row>
+                    <v-flex sm12 style="text-align: center">
+                        <span class="error" v-for="error in errors">{{error}}</span><br>
+                        <v-btn primary style="width: 200px" @click="submit">
+                            <v-icon>fa-sign-in fa-lg fa-fw</v-icon>
+                            Login
+                        </v-btn>
+                    </v-flex>
+                </v-layout>
+                <v-layout row>
+                    <v-flex sm12 style="text-align: center">
+                        <router-link to="/register" style="margin-right: 5px">Register</router-link>
+                        <router-link to="/" style="margin-left: 5px">Forgot Password</router-link>
+                    </v-flex>
+                </v-layout>
+            </v-card>
+        </v-flex>
+    </v-layout>
 </template>
 <script>
     export default {
         data() {
             return {
+                initialize: true,
                 errors: [],
                 username: null,
                 password: null,
                 rules: {
                     username: (v) => {
+                        if (this.initialize) return true;
                         return !!v || 'Username is required.';
                     },
                     password: (v) => {
+                        if (this.initialize) return true;
                         return !!v || 'Password is required.';
                     }
                 }
             }
         },
-        mounted() {
-
-        },
         methods: {
+            focus() {
+                this.initialize = false;
+            },
+            blur() {
+                this.initialize = false;
+            },
             submit() {
+                this.initialize = false;
                 this.errors = [];
                 if (this.username && this.password) {
                     this.$store.dispatch('LOGIN', {
