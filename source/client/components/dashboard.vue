@@ -70,9 +70,13 @@
         <v-layout row>
             <v-flex>
                 <v-card height="90px" style="padding: 5px; text-align: right">
-                    <div v-for="pool in pools" class="totalHashRate" style="color: #f5b643; font-size: medium">{{pool}}</div>
+                    <div v-for="pool in pools" class="totalHashRate" style="color: #f5b643; font-size: medium">
+                        {{pool}}
+                    </div>
                     <div class="totalHashRate" style="color: whitesmoke; font-size: medium">Version : {{version}}</div>
-                    <div class="totalHashRate" style="color: #8888f5; font-size: medium">Running Time : {{runningTime}}</div>
+                    <div class="totalHashRate" style="color: #8888f5; font-size: medium">
+                        Running Time : {{runningTime}}
+                    </div>
                 </v-card>
             </v-flex>
         </v-layout>
@@ -119,7 +123,7 @@
             }
         },
         mounted() {
-            ipcRenderer.on('state', (event, data) => {
+            ipcRenderer.on('process:data', (event, data) => {
                 this.totalHashRate = (data.totalHashRate / 1000).toFixed(3);
                 this.totalShare = data.numberOfShare;
                 this.gpuList = _.map(data.gpuInfo, function (item, i) {

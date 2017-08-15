@@ -81,12 +81,13 @@
             }
         },
         mounted() {
-            ipcRenderer.on('config', (event, data) => {
-                this.$store.commit('SET_CONFIG', data);
+            ipcRenderer.on('command:response', (event, data) => {
+                if (data.command === 'configuration')
+                    this.$store.commit('SET_CONFIG', data.data);
             });
 
-            ipcRenderer.send('command', {
-                command: 'get-config'
+            ipcRenderer.send('command:request', {
+                command: 'configuration'
             })
         }
     }

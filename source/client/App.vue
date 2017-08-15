@@ -61,19 +61,21 @@
             }
         },
         mounted() {
-            ipcRenderer.on('response', (event, data) => {
-                this.$store.commit('SET_RUNNING', (data.status === 'running'));
+            ipcRenderer.on('process:status', (event, data) => {
+                this.$store.commit('SET_RUNNING', (data === 'start'));
             });
         },
         methods: {
             start() {
-                ipcRenderer.send('command', {
-                    command: 'start-mining',
-                    config: this.$store.state.config
+                ipcRenderer.send('command:request', {
+                    command: 'start',
+                    data: this.$store.state.config
                 });
             },
             stop() {
-                ipcRenderer.send('command', {command: 'stop-mining'});
+                ipcRenderer.send('command:request', {
+                    command: 'stop'
+                });
             }
         }
     }
