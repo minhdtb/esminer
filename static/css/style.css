@@ -1,3 +1,11 @@
+* {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 body {
     overflow: hidden;
 }
@@ -31,6 +39,6 @@ body {
 }
 
 .table-info {
-    border-spacing:0; /* Removes the cell spacing via CSS */
+    border-spacing: 0; /* Removes the cell spacing via CSS */
     border-collapse: collapse;
 }

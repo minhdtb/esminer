@@ -87,8 +87,8 @@
     import _ from 'lodash'
     import moment from 'moment'
 
-    let totalPoints1 = 200;
-    let totalPoints2 = 50;
+    const HASHRATE_TOTAL = 200;
+    const TEMP_TOTAL = 50;
 
     function getPlotData(data, value, total) {
         if (data.length > 0)
@@ -148,8 +148,9 @@
 
             let hashRatePlot;
             let tempPlotList = [];
+
             setTimeout(() => {
-                hashRatePlot = $.plot('#total-hash-rate', [getPlotData([], 0, totalPoints1)], {
+                hashRatePlot = $.plot('#total-hash-rate', [getPlotData([], 0, HASHRATE_TOTAL)], {
                     colors: ['#FF4500'],
                     series: {
                         lines: {
@@ -184,7 +185,7 @@
                 });
 
                 tempPlotList = _.map(this.gpuList, (gpu) => {
-                    return $.plot('#gpu-temp-' + gpu.id, [getPlotData([], 0, totalPoints2)], {
+                    return $.plot('#gpu-temp-' + gpu.id, [getPlotData([], 0, TEMP_TOTAL)], {
                         colors: ['#FF0000', '90EE90'],
                         series: {
                             lines: {
@@ -212,17 +213,17 @@
                 });
             }, 200);
 
-            function updatePlot(value, gpuList) {
+            function updatePlot(value, gpus) {
                 if (hashRatePlot) {
-                    let olData = hashRatePlot.getData()[0].data;
-                    hashRatePlot.setData([getPlotData(olData, value, totalPoints1)]);
+                    let oldData = hashRatePlot.getData()[0].data;
+                    hashRatePlot.setData([getPlotData(oldData, value, HASHRATE_TOTAL)]);
                     hashRatePlot.draw();
                 }
 
-                _.each(gpuList, (gpu, i) => {
+                _.each(gpus, (gpu, i) => {
                     if (tempPlotList[i]) {
-                        let olData = tempPlotList[i].getData()[0].data;
-                        tempPlotList[i].setData([getPlotData(olData, gpu.temperature, totalPoints2)]);
+                        let oldData = tempPlotList[i].getData()[0].data;
+                        tempPlotList[i].setData([getPlotData(oldData, gpu.temperature, TEMP_TOTAL)]);
                         tempPlotList[i].draw();
                     }
                 });

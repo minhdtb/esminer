@@ -22,6 +22,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "rimraf": "^2.6.1",
+    "vee-validate": "^2.0.0-rc.12",
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
     "vuetify": "^0.14.10",
