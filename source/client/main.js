@@ -27,6 +27,7 @@ const store = new Vuex.Store({
     state: {
         authUser: null,
         running: false,
+        status: null,
         config: {
             epool: null,
             ewal: null,
@@ -37,6 +38,7 @@ const store = new Vuex.Store({
             dpsw: null,
             di: null,
             mode: 1,
+            runMode: 0,
             dcoin: 'sc'
         }
     },
@@ -57,6 +59,9 @@ const store = new Vuex.Store({
         },
         SET_CONFIG(state, config) {
             state.config = config;
+        },
+        SET_STATUS(state, status) {
+            state.status = status;
         }
     },
     getters: {
@@ -70,7 +75,6 @@ const isAuthRoute = route => route.fullPath.indexOf('/login') !== -1 || route.fu
 const loadFromLocalStorage = () => {
     if (localStorage) {
         let user = JSON.parse(localStorage.getItem('authUser'));
-        console.log(user);
         if (user) {
             store.commit('SET_AUTH', user);
             return true;
@@ -82,8 +86,6 @@ const loadFromLocalStorage = () => {
 
 router.beforeEach((to, from, next) => {
     const isLogged = store.getters.isLoggedIn || loadFromLocalStorage();
-
-    console.log(isLogged);
     if (!isAuthRoute(to) && !isLogged) {
         next('/login')
     } else {

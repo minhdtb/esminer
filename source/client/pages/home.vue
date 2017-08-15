@@ -1,36 +1,46 @@
 <template>
     <div>
-        <v-tabs dark v-model="active">
-            <v-tabs-bar slot="activators" class="red">
-                <v-tabs-item :disabled="tab === 'configuration'? isRunning: false" v-for="tab in tabs" :key="tab"
-                             :href="'#' + tab" ripple>
-                    <v-icon v-if="tab === 'dashboard'" style="margin-top: 3px">
-                        fa-home fa-lg fa-fw
-                    </v-icon>
-                    <v-icon v-else style="margin-top: 3px">
-                        fa-cog fa-lg fa-fw
-                    </v-icon>
-                    {{ tab }}
-                </v-tabs-item>
-                <v-tabs-slider class="yellow"></v-tabs-slider>
-            </v-tabs-bar>
-            <v-tabs-content id="dashboard">
-                <dashboard></dashboard>
-            </v-tabs-content>
-            <v-tabs-content id="configuration" style="height: 580px">
-                <configuration></configuration>
-            </v-tabs-content>
-        </v-tabs>
-        <v-btn v-if="!isRunning" primary style="width: 250px; position: absolute; left:4px" @click="start()">
-            <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
-            START MINING
-        </v-btn>
-        <v-btn v-if="isRunning" error style="width: 250px; position: absolute; left: 4px" @click="stop()">
-            <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
-            STOP MINING
-        </v-btn>
+        <v-layout row>
+            <v-flex sm12>
+                <v-tabs dark v-model="active">
+                    <v-tabs-bar slot="activators" class="red">
+                        <v-tabs-item :disabled="tab === 'configuration'? isRunning: false" v-for="tab in tabs"
+                                     :key="tab"
+                                     :href="'#' + tab" ripple>
+                            <v-icon v-if="tab === 'dashboard'" style="margin-top: 3px">
+                                fa-home fa-lg fa-fw
+                            </v-icon>
+                            <v-icon v-else style="margin-top: 3px">
+                                fa-cog fa-lg fa-fw
+                            </v-icon>
+                            {{ tab }}
+                        </v-tabs-item>
+                        <v-tabs-slider class="yellow"></v-tabs-slider>
+                    </v-tabs-bar>
+                    <v-tabs-content id="dashboard">
+                        <dashboard></dashboard>
+                    </v-tabs-content>
+                    <v-tabs-content id="configuration" style="height: 550px">
+                        <configuration></configuration>
+                    </v-tabs-content>
+                </v-tabs>
+            </v-flex>
+        </v-layout>
+        <v-layout row>
+            <v-flex sm12>
+                <v-btn v-if="!isRunning" primary style="width: 250px; position: absolute; left: 4px" @click="start()">
+                    <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
+                    START MINING
+                </v-btn>
+                <v-btn v-if="isRunning" error style="width: 250px; position: absolute; left: 4px" @click="stop()">
+                    <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
+                    STOP MINING
+                </v-btn>
 
-        <v-btn style="position: absolute; left: 876px" warning @click="logout">Logout</v-btn>
+                <v-btn style="position: absolute; left: 876px" :disabled="isRunning" warning @click="logout">Logout
+                </v-btn>
+            </v-flex>
+        </v-layout>
     </div>
 </template>
 <script>
@@ -60,6 +70,14 @@
         mounted() {
             ipcRenderer.on('process:status', (event, data) => {
                 this.$store.commit('SET_RUNNING', (data === 'start'));
+
+                if (data === 'start') {
+                    this.$store.commit('SET_STATUS', 'Initializing...')
+                }
+
+                if (data === 'stop') {
+                    this.$store.commit('SET_STATUS', 'Stopped.')
+                }
             });
         },
         methods: {

@@ -31,7 +31,11 @@ body {
 }
 
 .table-hash-rate {
-    padding: 10px 10px 10px 40px;
+    margin: 0 auto;
+}
+
+.table-gpu {
+    margin: 0 auto;
 }
 
 .table-gpu td {

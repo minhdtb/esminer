@@ -7,7 +7,7 @@ const fs = require('fs');
 const CONFIG_FILE = './config.json';
 
 const WINDOW_WIDTH = 1000;
-const WINDOW_HEIGHT = 750;
+const WINDOW_HEIGHT = 720;
 
 const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
@@ -68,7 +68,8 @@ function convertData(input) {
 
         let info3 = input.result[5].split(';');
 
-        let info4 = _.reduce(input.result[6].split(';'), (result, value, index) => {
+        let info4 = input.result[6].split(';');
+        info4 = _.reduce(info4, (result, value, index) => {
             if (index % 2 === 0)
                 result.push(info4.slice(index, index + 2));
 
@@ -108,7 +109,7 @@ function convertData(input) {
         return dataInfo;
     }
     catch (e) {
-
+        console.log(e);
     }
 
     return dataInfo;
@@ -117,7 +118,7 @@ function convertData(input) {
 function getParams() {
     let config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
 
-    let r = _.filter(_.map(_.keys(config), (key) => {
+    let r = _.filter(_.map(_.keys(_.omit(config, ['runMode'])), (key) => {
         let value = config[key];
         if (!value && key === 'epool') {
             value = DEFAULT_POOL
@@ -132,7 +133,10 @@ function getParams() {
         return !!items[1]
     });
 
-    return _.flatten(r);
+    return {
+        params: _.flatten(r),
+        runMode: config.runMode
+    };
 }
 
 app.on('ready', () => {
@@ -181,7 +185,8 @@ app.on('ready', () => {
                 event.sender.send('process:status', 'stop');
             });
 
-            claymoreProcess.start(getParams());
+            let p = getParams();
+            claymoreProcess.start(p.params, p.runMode);
         } else if (data.command === 'stop') {
             if (claymoreProcess) {
                 claymoreProcess.stop();

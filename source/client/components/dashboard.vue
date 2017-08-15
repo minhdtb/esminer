@@ -2,14 +2,12 @@
     <div>
         <v-layout row style="margin-bottom: 10px; margin-top: 10px">
             <v-flex xs8>
-                <v-card height="200px" id="test">
-                    <v-card-media>
-                        <div id="total-hash-rate" style="height: 190px; margin: 5px"></div>
-                    </v-card-media>
+                <v-card height="100%" style="padding: 5px">
+                    <div id="total-hash-rate" style="height: 100%"></div>
                 </v-card>
             </v-flex>
             <v-flex xs4>
-                <v-card height="200px">
+                <v-card height="100%" style="padding: 5px">
                     <table class="table-hash-rate">
                         <tbody>
                         <tr>
@@ -36,47 +34,64 @@
         </v-layout>
         <v-layout row style="margin-bottom: 10px">
             <v-flex xs2 v-for="gpu in gpuList" :key='gpu.id'>
-                <v-card height="260px">
-                    <v-card-media>
-                        <div :id="'gpu-temp-' + gpu.id" style="height: 150px; margin: 5px"></div>
-                        <table class="table-gpu">
-                            <tbody>
-                            <tr>
-                                <td style="color: #f3f3f3; text-align: right">Rate</td>
-                                <td style="text-align: center"><h5 class="totalHashRate" style="color: orangered">
-                                    {{gpu.hashRate}}</h5>
-                                </td>
-                                <td style="color: plum;">MH/s</td>
-                            </tr>
-                            <tr>
-                                <td style="color: #f3f3f3; text-align: right">Temp</td>
-                                <td style="text-align: center"><h5 class="totalHashRate" style="color: red">
-                                    {{gpu.temperature}}</h5></td>
-                                <td style="color: plum;">°C</td>
-                            </tr>
-                            <tr>
-                                <td style="color: #f3f3f3; text-align: right">Fan</td>
-                                <td style="text-align: center">
-                                    <h5 class="totalHashRate" style="color: lightgreen">{{gpu.fanSpeed}}</h5>
-                                </td>
-                                <td style="color: plum;">%</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </v-card-media>
+                <v-card height="100%">
+                    <v-layout row>
+                        <v-flex sm12>
+                            <div :id="'gpu-temp-' + gpu.id" style="height: 150px; margin: 5px"></div>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex sm12>
+                            <table class="table-gpu">
+                                <tbody>
+                                <tr>
+                                    <td style="color: #f3f3f3; text-align: right">Rate</td>
+                                    <td style="text-align: center"><h5 class="totalHashRate" style="color: orangered">
+                                        {{gpu.hashRate}}</h5>
+                                    </td>
+                                    <td style="color: plum;">MH/s</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #f3f3f3; text-align: right">Temp</td>
+                                    <td style="text-align: center"><h5 class="totalHashRate" style="color: red">
+                                        {{gpu.temperature}}</h5></td>
+                                    <td style="color: plum;">°C</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #f3f3f3; text-align: right">Fan</td>
+                                    <td style="text-align: center">
+                                        <h5 class="totalHashRate" style="color: lightgreen">{{gpu.fanSpeed}}</h5>
+                                    </td>
+                                    <td style="color: plum;">%</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </v-flex>
+                    </v-layout>
                 </v-card>
             </v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex>
-                <v-card height="90px" style="padding: 5px; text-align: right">
-                    <div v-for="pool in pools" class="totalHashRate" style="color: #f5b643; font-size: medium">
-                        {{pool}}
-                    </div>
-                    <div class="totalHashRate" style="color: whitesmoke; font-size: medium">Version : {{version}}</div>
-                    <div class="totalHashRate" style="color: #8888f5; font-size: medium">
-                        Running Time : {{runningTime}}
-                    </div>
+            <v-flex sm12>
+                <v-card height="90px" style="padding: 5px">
+                    <v-layout row>
+                        <v-flex sm6>
+                            <div v-if="!!$store.state.status" class="totalHashRate" style="color: #87b9f5; font-size: medium">
+                               Status : {{$store.state.status}}
+                            </div>
+                        </v-flex>
+                        <v-flex sm6 style="text-align: right">
+                            <div v-if="!!version" class="totalHashRate" style="color: whitesmoke; font-size: smaller">
+                                Version : {{version}}
+                            </div>
+                            <div v-for="pool in pools" class="totalHashRate" style="color: #f5b643; font-size: small">
+                                {{pool}}
+                            </div>
+                            <div v-if="!!runningTime" class="totalHashRate" style="color: #8888f5; font-size: small">
+                                Running Time : {{runningTime}}
+                            </div>
+                        </v-flex>
+                    </v-layout>
                 </v-card>
             </v-flex>
         </v-layout>
@@ -119,7 +134,7 @@
                 ],
                 pools: [],
                 version: null,
-                runningTime: null
+                runningTime: null,
             }
         },
         mounted() {
@@ -141,6 +156,10 @@
 
                 if (!this.$store.state.running) {
                     this.$store.commit('SET_RUNNING', true)
+                }
+
+                if (this.$store.state.status !== 'Running.') {
+                    this.$store.commit('SET_STATUS', 'Running.')
                 }
 
                 updatePlot(data.totalHashRate / 1000, this.gpuList);

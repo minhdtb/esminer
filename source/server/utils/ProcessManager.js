@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
 
 export class ProcessManager extends EventEmitter {
 
@@ -15,15 +16,19 @@ export class ProcessManager extends EventEmitter {
             this._process = exec('start /i /wait ' + this._name + ' ' + params.join(' '), {
                 cwd: this._dir
             });
-
-            this._process.on('close', () => {
-                this.emit('stop');
-            })
         } else {
-
+            this._process = spawn(this._name, params, {
+                cwd: this._dir
+            });
         }
 
-        this.emit('start');
+        if (this._process) {
+            this._process.on('close', () => {
+                this.emit('stop');
+            });
+
+            this.emit('start');
+        }
     }
 
     stop() {
