@@ -6,13 +6,27 @@
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
     <link href="static/vendor/css/vuetify.min.css" rel="stylesheet">
     <link href="static/vendor/css/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-    <link href="static/css/style.css" rel="stylesheet">
     <% if (htmlWebpackPlugin.options.nodeModules) { %>
-    <!-- Add `node_modules/` to global paths so `require` works properly in development -->
     <script>
         require('module').globalPaths.push('<%= htmlWebpackPlugin.options.nodeModules.replace(/\\/g, '\\\\') %>')
     </script>
     <% } %>
+    <style type="text/css">
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
 <div id="app"></div>

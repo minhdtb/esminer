@@ -250,3 +250,37 @@
         }
     }
 </script>
+<style>
+    .tickLabel {
+        color: #d1d1d1 !important
+    }
+
+    .totalHashRate {
+        margin-bottom: 0;
+        text-shadow: 2px 2px #2a2a2a;
+        transition: opacity 0.5s linear;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .totalHashRateUnit {
+        margin-bottom: 0;
+        margin-left: 10px;
+    }
+
+    .table-hash-rate {
+        margin: 0 auto;
+    }
+
+    .table-gpu {
+        margin: 0 auto;
+    }
+
+    .table-gpu td {
+        padding-left: 5px;
+    }
+
+    .table-info {
+        border-spacing: 0; /* Removes the cell spacing via CSS */
+        border-collapse: collapse;
+    }
+</style>

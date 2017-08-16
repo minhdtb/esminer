@@ -5,7 +5,7 @@ process.env.BABEL_ENV = 'server';
 const path = require('path');
 const {dependencies} = require('../package.json');
 const webpack = require('webpack');
-
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const BabiliWebpackPlugin = require('babili-webpack-plugin');
 
 let mainConfig = {
@@ -35,7 +35,7 @@ let mainConfig = {
     output: {
         filename: '[name].js',
         libraryTarget: 'commonjs2',
-        path: path.join(__dirname, '../dist/electron')
+        path: path.join(__dirname, '../dist')
     },
     plugins: [
         new webpack.NoEmitOnErrorsPlugin()
@@ -56,6 +56,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 if (process.env.NODE_ENV === 'production') {
     mainConfig.plugins.push(
+        new CopyWebpackPlugin([
+            {from: './claymore', to: 'claymore'}
+        ]),
         new BabiliWebpackPlugin({
             removeConsole: true,
             removeDebugger: true

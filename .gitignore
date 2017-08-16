@@ -1,6 +1,7 @@
 .idea
 logs
 *.log
+*.txt
 bower_components
 node_modules/
 releases

@@ -7,7 +7,7 @@ const fs = require('fs');
 const CONFIG_FILE = './config.json';
 
 const WINDOW_WIDTH = 1000;
-const WINDOW_HEIGHT = 720;
+const WINDOW_HEIGHT = 725;
 
 const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
@@ -141,9 +141,13 @@ function getParams() {
 
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
+        titleBarStyle: 'hidden',
+        frame: false,
         width: WINDOW_WIDTH,
         height: WINDOW_HEIGHT,
-        icon: path.resolve(__dirname, '../static/images/logo.ico')
+        icon: path.resolve(__dirname, '../../static/images/logo.ico'),
+        show: false,
+        backgroundColor: '#303030'
     });
 
     const mainURL = process.env.NODE_ENV === 'development'
@@ -153,6 +157,10 @@ app.on('ready', () => {
     mainWindow.setResizable(false);
     mainWindow.setMaximizable(false);
     mainWindow.loadURL(mainURL);
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show()
+    });
 
     mainWindow.on('closed', () => {
         mainWindow = null
@@ -165,7 +173,6 @@ app.on('ready', () => {
 
             /* start claymore */
             claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../claymore'), 'EthDcrMiner64.exe');
-
             claymoreProcess.on('start', () => {
                 event.sender.send('process:status', 'start');
 

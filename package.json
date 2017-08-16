@@ -1,27 +1,31 @@
 {
-  "name": "test-app",
-  "version": "0.0.0",
+  "name": "esminer",
+  "version": "1.0.1",
   "author": "minhdtb <minhdtb.83@gmail.com>",
-  "description": "this is the test app",
+  "description": "ESMINER Pro v 1.0.1",
   "license": "",
-  "main": "./dist/electron/server.js",
+  "main": "./dist/server.js",
   "scripts": {
-    "build": "node config/build.js && electron-builder",
-    "build:dir": "node config/build.js && electron-builder --dir",
-    "build:clean": "cross-env BUILD_TARGET=clean node config/build.js",
-    "dev": "node config/dev-runner.js",
+    "build": "node build/build.js && electron-builder",
+    "build:dir": "node build/build.js && electron-builder --dir",
+    "build:clean": "cross-env BUILD_TARGET=clean node build/build.js",
+    "dev": "node build/dev-runner.js",
     "pack": "npm run pack:main && npm run pack:renderer",
-    "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config config/webpack.server.config.js",
-    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config config/webpack.client.config.js"
+    "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config build/webpack.server.config.js",
+    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config build/webpack.client.config.js"
   },
   "build": {
-    "productName": "test-app",
-    "appId": "com.electron.test-app",
+    "productName": "ESMINER",
+    "appId": "com.minhdtb.esminer",
     "directories": {
-      "output": "build"
+      "output": "releases"
     },
     "files": [
-      "dist/electron/**/*"
+      "dist/**/*",
+      "!dist/claymore/**/*"
+    ],
+    "extraResources": [
+      "claymore"
     ],
     "dmg": {
       "contents": [
@@ -50,6 +54,7 @@
   },
   "dependencies": {
     "axios": "^0.16.1",
+    "electron-log": "^2.2.7",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "vue": "^2.3.3",
@@ -74,9 +79,9 @@
     "del": "^2.2.1",
     "devtron": "^1.1.0",
     "electron": "^1.7.2",
+    "electron-builder": "^19.10.0",
     "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.0.1",
-    "electron-builder": "^19.10.0",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
     "file-loader": "^0.11.1",
     "html-webpack-plugin": "^2.16.1",
