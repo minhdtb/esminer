@@ -2,17 +2,24 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>ESMINER Pro</title>
+    <title>test-app</title>
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
     <link href="static/vendor/css/vuetify.min.css" rel="stylesheet">
     <link href="static/vendor/css/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <link href="static/css/style.css" rel="stylesheet">
+    <% if (htmlWebpackPlugin.options.nodeModules) { %>
+    <!-- Add `node_modules/` to global paths so `require` works properly in development -->
+    <script>
+        require('module').globalPaths.push('<%= htmlWebpackPlugin.options.nodeModules.replace(/\\/g, '\\\\') %>')
+    </script>
+    <% } %>
 </head>
 <body>
-<div id="app">
-</div>
+<div id="app"></div>
 <script type="text/javascript" src="static/vendor/js/jquery.min.js"></script>
 <script type="text/javascript" src="static/vendor/js/jquery.flot.js"></script>
+<script>
+    if (process.env.NODE_ENV !== 'development') window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+</script>
 </body>
 </html>

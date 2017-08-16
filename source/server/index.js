@@ -146,9 +146,9 @@ app.on('ready', () => {
         icon: path.resolve(__dirname, '../static/images/logo.ico')
     });
 
-    const mainURL = process.env.HOT
-        ? `http://localhost:${process.env.PORT}/main.html`
-        : 'file://' + path.join(__dirname, 'main.html');
+    const mainURL = process.env.NODE_ENV === 'development'
+        ? `http://localhost:9080`
+        : `file://${__dirname}/index.html`;
 
     mainWindow.setResizable(false);
     mainWindow.setMaximizable(false);
@@ -164,7 +164,7 @@ app.on('ready', () => {
             fs.writeFileSync(CONFIG_FILE, JSON.stringify(data.data), 'utf-8');
 
             /* start claymore */
-            claymoreProcess = new ProcessManager(path.resolve(__dirname, 'claymore'), 'EthDcrMiner64.exe');
+            claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../claymore'), 'EthDcrMiner64.exe');
 
             claymoreProcess.on('start', () => {
                 event.sender.send('process:status', 'start');
