@@ -172,7 +172,7 @@ app.on('ready', () => {
             fs.writeFileSync(CONFIG_FILE, JSON.stringify(data.data), 'utf-8');
 
             /* start claymore */
-            claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../claymore'), 'EthDcrMiner64.exe');
+            claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../dist/claymore'), 'EthDcrMiner64.exe');
             claymoreProcess.on('start', () => {
                 event.sender.send('process:status', 'start');
 

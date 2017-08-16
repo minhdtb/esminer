@@ -58,7 +58,9 @@ if (process.env.NODE_ENV === 'production') {
     mainConfig.plugins.push(
         new CopyWebpackPlugin([
             {from: './claymore', to: 'claymore'}
-        ]),
+        ], {
+            ignore: ['*.txt']
+        }),
         new BabiliWebpackPlugin({
             removeConsole: true,
             removeDebugger: true

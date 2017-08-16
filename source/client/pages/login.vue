@@ -1,43 +1,56 @@
 <template>
-    <v-layout row style="margin-top: 50px">
-        <v-flex sm6 offset-sm3 style="padding: 10px">
-            <v-card style="padding: 25px; text-align: center">
-                <v-layout row>
-                    <v-flex sm12>
-                        <img src="static/images/logo.png" style="width: 180px">
-                        <v-text-field label="Username" placeholder="Username" @blur="blur" @focus="focus"
-                                      v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
-                        </v-text-field>
-                        <v-text-field label="Password" placeholder="Password" @blur="blur" @focus="focus"
-                                      v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
-                                      type="password">
-                        </v-text-field>
-                    </v-flex>
-                </v-layout>
-                <v-layout row>
-                    <v-flex sm12 style="text-align: center">
-                        <span class="error" v-for="error in errors">{{error}}</span><br>
-                        <v-btn primary style="width: 200px" @click="submit">
-                            <v-icon>fa-sign-in fa-lg fa-fw</v-icon>
-                            Login
-                        </v-btn>
-                    </v-flex>
-                </v-layout>
-                <v-layout row>
-                    <v-flex sm12 style="text-align: center">
-                        <router-link to="/register" style="margin-right: 5px">Register</router-link>
-                        <router-link to="/" style="margin-left: 5px">Forgot Password</router-link>
-                    </v-flex>
-                </v-layout>
-            </v-card>
+    <v-layout row style="margin-top: 10px">
+        <v-flex sm6 offset-sm3 style="padding: 45px">
+            <form :submit.prevent="submit">
+                <v-card style="padding: 25px; text-align: center">
+                    <v-layout row>
+                        <v-flex sm12>
+                            <img src="static/images/logo.png" style="width: 180px">
+                            <v-text-field label="Username" placeholder="Username" @blur="blur" @focus="focus"
+                                          v-on:keyup.native.enter.prevent="submit"
+                                          v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
+                            </v-text-field>
+                            <v-text-field label="Password" placeholder="Password" @blur="blur" @focus="focus"
+                                          v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
+                                          type="password" v-on:keyup.native.enter.prevent="submit">
+                            </v-text-field>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex sm12 style="text-align: center">
+                            <div>
+                                <pulse-loader :loading="loading" color="green" size="10px"></pulse-loader>
+                            </div>
+                            <div class="error" v-for="error in errors">
+                                <span>{{error}}</span>
+                            </div>
+                            <v-btn :disabled="loading" primary style="width: 200px" @click="submit">
+                                <v-icon>fa-sign-in fa-lg fa-fw</v-icon>
+                                Login
+                            </v-btn>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row>
+                        <v-flex sm12 style="text-align: center">
+                            <router-link to="/register" style="margin-right: 5px">Register</router-link>
+                        </v-flex>
+                    </v-layout>
+                </v-card>
+            </form>
         </v-flex>
     </v-layout>
 </template>
 <script>
+    import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+
     export default {
+        components: {
+            PulseLoader
+        },
         data() {
             return {
                 initialize: true,
+                loading: false,
                 errors: [],
                 username: null,
                 password: null,
@@ -64,10 +77,12 @@
                 this.initialize = false;
                 this.errors = [];
                 if (this.username && this.password) {
+                    this.loading = true;
                     this.$store.dispatch('LOGIN', {
                         username: this.username,
                         password: this.password
                     }).then(response => {
+                        this.loading = false;
                         let user = response.data;
                         if (user) {
                             localStorage.setItem('authUser', JSON.stringify(user));
@@ -75,6 +90,7 @@
                             this.$router.push('/')
                         }
                     }).catch(e => {
+                        this.loading = false;
                         this.errors.push(e.response.data);
                     });
                 }
