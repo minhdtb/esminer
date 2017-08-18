@@ -1,4 +1,8 @@
-import {app, BrowserWindow, ipcMain} from 'electron'
+import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
+
+if (require('electron-squirrel-startup'))
+    app.quit();
+
 import path from 'path'
 import {ProcessManager} from "./utils/ProcessManager";
 
@@ -81,7 +85,7 @@ function convertData(input) {
         let gpuInfo = _.map(info1, (item, i) => {
             return {
                 hashRate: parseInt(item),
-                hashRateDCR: info3[i] === 'off' ? 'off' : parseInt(info3[i]),
+                hashRateDCR: info3[i] === 'off' ? 0 : parseInt(info3[i]),
                 temperature: parseInt(info4[i][0]),
                 fanSpeed: parseInt(info4[i][1])
             }
@@ -139,8 +143,10 @@ function getParams() {
     };
 }
 
+let mainWindow;
+
 app.on('ready', () => {
-    let mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
         frame: false,
         width: WINDOW_WIDTH,
@@ -156,15 +162,47 @@ app.on('ready', () => {
 
     mainWindow.setResizable(false);
     mainWindow.setMaximizable(false);
-    mainWindow.loadURL(mainURL);
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
     });
 
-    mainWindow.on('closed', () => {
-        mainWindow = null
+    mainWindow.on('close', event => {
+        if (app.quitting) {
+            mainWindow = null
+        } else {
+            event.preventDefault();
+            mainWindow.hide()
+        }
     });
+
+    const tray = new Tray(path.resolve(__dirname, '../../static/images/logo.ico'));
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Show',
+            click: function () {
+                mainWindow.show();
+            }
+        },
+        {
+            label: 'Run GPU-Z',
+            click: function () {
+
+            }
+        },
+        {
+            type: 'separator'
+        },
+        {
+            label: 'Quit',
+            click: function () {
+                app.quit();
+            }
+        }
+    ]);
+
+    tray.setToolTip('ESMINER Pro.');
+    tray.setContextMenu(contextMenu);
 
     ipcMain.on('command:request', (event, data) => {
         if (data.command === 'start') {
@@ -208,7 +246,9 @@ app.on('ready', () => {
                 })
             }
         }
-    })
+    });
+
+    mainWindow.loadURL(mainURL);
 });
 
 app.on('window-all-closed', () => {
@@ -216,6 +256,13 @@ app.on('window-all-closed', () => {
         claymoreProcess.stop();
         claymoreProcess = null;
     }
+});
 
-    app.quit()
+app.on('before-quit', () => {
+    if (claymoreProcess) {
+        claymoreProcess.stop();
+        claymoreProcess = null;
+    }
+
+    app.quitting = true
 });

@@ -37,7 +37,7 @@
                 <v-card height="100%">
                     <v-layout row>
                         <v-flex sm12>
-                            <div :id="'gpu-temp-' + gpu.id" style="height: 150px; margin: 5px"></div>
+                            <div :id="'gpu-temp-' + gpu.id" style="height: 120px; margin: 5px"></div>
                         </v-flex>
                     </v-layout>
                     <v-layout row>
@@ -49,6 +49,12 @@
                                     <td style="text-align: center"><h5 class="totalHashRate" style="color: orangered">
                                         {{gpu.hashRate}}</h5>
                                     </td>
+                                    <td style="color: plum;">MH/s</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #f3f3f3; text-align: right">DCR</td>
+                                    <td style="text-align: center"><h5 class="totalHashRate" style="color: orangered">
+                                        {{gpu.hashRateDCR}}</h5></td>
                                     <td style="color: plum;">MH/s</td>
                                 </tr>
                                 <tr>
@@ -76,8 +82,9 @@
                 <v-card height="90px" style="padding: 5px">
                     <v-layout row>
                         <v-flex sm6>
-                            <div v-if="!!$store.state.status" class="totalHashRate" style="color: #87b9f5; font-size: medium">
-                               Status : {{$store.state.status}}
+                            <div v-if="!!$store.state.status" class="totalHashRate"
+                                 style="color: #87b9f5; font-size: medium">
+                                Status : {{$store.state.status}}
                             </div>
                         </v-flex>
                         <v-flex sm6 style="text-align: right">
@@ -125,12 +132,12 @@
                 totalHashRate: 0,
                 totalShare: 0,
                 gpuList: [
-                    {id: 0, hashRate: 0, temperature: 0, fanSpeed: 0},
-                    {id: 1, hashRate: 0, temperature: 0, fanSpeed: 0},
-                    {id: 2, hashRate: 0, temperature: 0, fanSpeed: 0},
-                    {id: 3, hashRate: 0, temperature: 0, fanSpeed: 0},
-                    {id: 4, hashRate: 0, temperature: 0, fanSpeed: 0},
-                    {id: 5, hashRate: 0, temperature: 0, fanSpeed: 0}
+                    {id: 0, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0},
+                    {id: 1, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0},
+                    {id: 2, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0},
+                    {id: 3, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0},
+                    {id: 4, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0},
+                    {id: 5, hashRate: 0, hashRateDCR: 0, temperature: 0, fanSpeed: 0}
                 ],
                 pools: [],
                 version: null,
@@ -145,6 +152,7 @@
                     return {
                         id: i,
                         hashRate: (item.hashRate / 1000).toFixed(1),
+                        hashRateDCR: (item.hashRateDCR / 1000).toFixed(1),
                         temperature: item.temperature,
                         fanSpeed: item.fanSpeed
                     }
@@ -196,6 +204,7 @@
                     yaxis: {
                         min: 0,
                         max: 300,
+                        tickSize: 50,
                         color: '#c6c6c6'
                     },
                     xaxis: {
@@ -223,6 +232,7 @@
                         yaxis: {
                             min: 0,
                             max: 100,
+                            tickSize: 20,
                             color: '#c6c6c6'
                         },
                         xaxis: {
