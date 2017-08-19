@@ -1,28 +1,33 @@
 import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
+import path from 'path'
+import {ProcessManager} from "./utils/ProcessManager";
 
+const isDev = require('electron-is-dev');
 const log = require('electron-log');
 log.transports.file.level = 'info';
 
 const {autoUpdater} = require("electron-updater");
 
+autoUpdater.logger = log;
+
 autoUpdater.on('checking-for-update', () => {
     log.info('Checking for update...');
 });
 
-autoUpdater.on('update-available', (info) => {
+autoUpdater.on('update-available', () => {
     log.info('Update available.');
 });
 
-autoUpdater.on('update-not-available', (info) => {
+autoUpdater.on('update-not-available', () => {
     log.info('Update not available.');
 });
 
-autoUpdater.on('error', (err) => {
+autoUpdater.on('error', () => {
     log.info('Error in auto-updater.');
 });
 
-autoUpdater.on('download-progress', (progressObj) => {
-    log.info("Download speed: " + progressObj.bytesPerSecond);
+autoUpdater.on('download-progress', (object) => {
+    log.info("Download speed: " + object.bytesPerSecond);
 });
 
 autoUpdater.on('update-downloaded', () => {
@@ -31,9 +36,6 @@ autoUpdater.on('update-downloaded', () => {
 
 if (require('electron-squirrel-startup'))
     app.quit();
-
-import path from 'path'
-import {ProcessManager} from "./utils/ProcessManager";
 
 const _ = require('lodash');
 const fs = require('fs');
@@ -46,8 +48,6 @@ const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
 let claymoreProcess;
-
-autoUpdater.logger = log;
 
 function connect(host, port, options) {
     if (!claymoreProcess)
@@ -177,11 +177,35 @@ function getParams() {
 let mainWindow;
 let tray;
 
-log.info("aaaaaaaaa");
+const isSecondInstance = app.makeSingleInstance(() => {
+    if (mainWindow) {
+        if (mainWindow.isMinimized())
+            mainWindow.restore();
+
+        mainWindow.focus()
+    }
+});
+
+if (isSecondInstance) {
+    app.quit()
+}
+
+const appFolder = path.dirname(process.execPath);
+const updateExe = path.resolve(appFolder, '..', 'Update.exe');
+const exeName = path.basename(process.execPath);
+
+app.setLoginItemSettings({
+    openAtLogin: true,
+    path: updateExe,
+    args: [
+        '--processStart', `"${exeName}"`,
+        '--process-start-args', `"--hidden"`
+    ]
+});
 
 app.on('ready', () => {
-
-    autoUpdater.checkForUpdates();
+    if (!isDev)
+        autoUpdater.checkForUpdates();
 
     mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
