@@ -182,6 +182,9 @@ const isSecondInstance = app.makeSingleInstance(() => {
         if (mainWindow.isMinimized())
             mainWindow.restore();
 
+        if (!mainWindow.isVisible())
+            mainWindow.show();
+
         mainWindow.focus()
     }
 });
