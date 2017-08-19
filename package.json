@@ -1,8 +1,8 @@
 {
   "name": "esminer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "minhdtb <minhdtb.83@gmail.com>",
-  "description": "ESMINER Pro v 1.0.1",
+  "description": "ESMINER Pro v 1.0.2",
   "license": "",
   "main": "./dist/server.js",
   "scripts": {
@@ -48,7 +48,14 @@
     },
     "win": {
       "icon": "build/icons/icon.ico",
-      "target": "squirrel"
+      "target": "squirrel",
+      "publish": [
+        {
+          "provider": "generic",
+          "url": "http://45.76.157.250:3001/download",
+          "channel": "latest"
+        }
+      ]
     },
     "linux": {
       "icon": "build/icons"
@@ -87,6 +94,7 @@
     "electron-builder-squirrel-windows": "^19.22.1",
     "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.0.1",
+    "electron-updater": "^2.8.7",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
     "file-loader": "^0.11.1",
     "html-webpack-plugin": "^2.16.1",

@@ -1,5 +1,34 @@
 import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
 
+const log = require('electron-log');
+log.transports.file.level = 'info';
+
+const {autoUpdater} = require("electron-updater");
+
+autoUpdater.on('checking-for-update', () => {
+    log.info('Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+    log.info('Update available.');
+});
+
+autoUpdater.on('update-not-available', (info) => {
+    log.info('Update not available.');
+});
+
+autoUpdater.on('error', (err) => {
+    log.info('Error in auto-updater.');
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+    log.info("Download speed: " + progressObj.bytesPerSecond);
+});
+
+autoUpdater.on('update-downloaded', () => {
+    autoUpdater.quitAndInstall();
+});
+
 if (require('electron-squirrel-startup'))
     app.quit();
 
@@ -17,6 +46,8 @@ const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
 let claymoreProcess;
+
+autoUpdater.logger = log;
 
 function connect(host, port, options) {
     if (!claymoreProcess)
@@ -144,8 +175,14 @@ function getParams() {
 }
 
 let mainWindow;
+let tray;
+
+log.info("aaaaaaaaa");
 
 app.on('ready', () => {
+
+    autoUpdater.checkForUpdates();
+
     mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
         frame: false,
@@ -176,7 +213,7 @@ app.on('ready', () => {
         }
     });
 
-    const tray = new Tray(path.resolve(__dirname, '../../static/images/logo.ico'));
+    tray = new Tray(path.resolve(__dirname, '../../static/images/logo.ico'));
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show',
