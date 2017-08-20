@@ -76,6 +76,10 @@
                     this.$store.commit('SET_STATUS', 'Stopped.')
                 }
             });
+
+            ipcRenderer.on('process:force-start', () => {
+                this.start();
+            });
         },
         methods: {
             start() {

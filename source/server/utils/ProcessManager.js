@@ -1,6 +1,9 @@
 const EventEmitter = require('events').EventEmitter;
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
+const runas = require('runas');
+
+const path = require('path');
 
 export class ProcessManager extends EventEmitter {
 
@@ -16,10 +19,16 @@ export class ProcessManager extends EventEmitter {
             this._process = exec('start /i /wait ' + this._name + ' ' + params.join(' '), {
                 cwd: this._dir
             });
-        } else {
+        } else if (mode === 1) {
             this._process = spawn(this._name, params, {
                 cwd: this._dir
             });
+        } else if (mode === 2) {
+            if (params && params.length) {
+                runas(path.join(this._dir, this._name), params.join(' '));
+            } else {
+                runas(path.join(this._dir, this._name));
+            }
         }
 
         if (this._process) {

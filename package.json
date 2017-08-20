@@ -6,13 +6,14 @@
   "license": "",
   "main": "./dist/server.js",
   "scripts": {
-    "build": "node build/build.js && electron-builder",
+    "build": "rimraf releases && node build/build.js && electron-builder",
     "build:dir": "node build/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node build/build.js",
     "dev": "node build/dev-runner.js",
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config build/webpack.server.config.js",
-    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config build/webpack.client.config.js"
+    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config build/webpack.client.config.js",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "productName": "ESMINER",
@@ -22,10 +23,12 @@
     },
     "files": [
       "dist/**/*",
-      "!dist/claymore/**/*"
+      "!dist/claymore/**/*",
+      "!dist/gpuz/**/*"
     ],
     "extraResources": [
       "dist/claymore",
+      "dist/gpuz",
       "static/images"
     ],
     "dmg": {
@@ -48,14 +51,7 @@
     },
     "win": {
       "icon": "build/icons/icon.ico",
-      "target": "squirrel",
-      "publish": [
-        {
-          "provider": "generic",
-          "url": "http://45.76.157.250:3001/download",
-          "channel": "latest"
-        }
-      ]
+      "target": "squirrel"
     },
     "linux": {
       "icon": "build/icons"
@@ -65,6 +61,7 @@
     "axios": "^0.16.1",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
+    "runas": "^3.1.1",
     "vue": "^2.3.3",
     "vue-electron": "^1.0.6",
     "vue-router": "^2.5.3",
@@ -88,7 +85,7 @@
     "del": "^2.2.1",
     "devtron": "^1.1.0",
     "electron": "^1.7.2",
-    "electron-builder": "^19.10.0",
+    "electron-builder": "^19.22.1",
     "electron-builder-squirrel-windows": "^19.22.1",
     "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.0.1",
@@ -101,6 +98,7 @@
     "html-webpack-plugin": "^2.16.1",
     "json-loader": "^0.5.4",
     "multispinner": "^0.2.1",
+    "rimraf": "^2.6.1",
     "style-loader": "^0.18.1",
     "url-loader": "^0.5.7",
     "vue-html-loader": "^1.2.2",

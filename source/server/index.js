@@ -7,7 +7,7 @@ const log = require('electron-log');
 log.transports.file.level = 'info';
 
 const {autoUpdater} = require("electron-updater");
-
+autoUpdater.setFeedURL('http://127.0.0.1:9000/releases/win');
 autoUpdater.logger = log;
 
 autoUpdater.on('checking-for-update', () => {
@@ -39,7 +39,8 @@ if (require('electron-squirrel-startup'))
 
 const _ = require('lodash');
 const fs = require('fs');
-const CONFIG_FILE = './config.json';
+const MAIN_CONFIG = './config_main.json';
+const RUN_CONFIG = './config_run.json';
 
 const WINDOW_WIDTH = 1000;
 const WINDOW_HEIGHT = 725;
@@ -48,6 +49,7 @@ const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
 let claymoreProcess;
+let gpuzProcess;
 
 function connect(host, port, options) {
     if (!claymoreProcess)
@@ -151,7 +153,7 @@ function convertData(input) {
 }
 
 function getParams() {
-    let config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
+    let config = JSON.parse(fs.readFileSync(MAIN_CONFIG, 'utf8').toString());
 
     let r = _.filter(_.map(_.keys(_.omit(config, ['runMode'])), (key) => {
         let value = config[key];
@@ -207,9 +209,6 @@ app.setLoginItemSettings({
 });
 
 app.on('ready', () => {
-    if (!isDev)
-        autoUpdater.checkForUpdates();
-
     mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
         frame: false,
@@ -240,6 +239,15 @@ app.on('ready', () => {
         }
     });
 
+    mainWindow.webContents.on('did-finish-load', () => {
+        if (fs.existsSync(RUN_CONFIG)) {
+            const runConfig = JSON.parse(fs.readFileSync(RUN_CONFIG, 'utf8').toString());
+            if (runConfig.run) {
+                mainWindow.webContents.send('process:force-start');
+            }
+        }
+    });
+
     tray = new Tray(path.resolve(__dirname, '../../static/images/logo.ico'));
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -251,7 +259,8 @@ app.on('ready', () => {
         {
             label: 'Run GPU-Z',
             click: function () {
-
+                gpuzProcess = new ProcessManager(path.resolve(__dirname, '../../dist/gpuz'), 'GPU-Z.exe');
+                gpuzProcess.start([], 2);
             }
         },
         {
@@ -271,7 +280,8 @@ app.on('ready', () => {
     ipcMain.on('command:request', (event, data) => {
         if (data.command === 'start') {
             /* save config */
-            fs.writeFileSync(CONFIG_FILE, JSON.stringify(data.data), 'utf-8');
+            fs.writeFileSync(MAIN_CONFIG, JSON.stringify(data.data), 'utf-8');
+            fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
             /* start claymore */
             claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../dist/claymore'), 'EthDcrMiner64.exe');
@@ -301,9 +311,11 @@ app.on('ready', () => {
                 claymoreProcess.stop();
                 claymoreProcess = null;
             }
+
+            fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
         } else if (data.command === 'configuration') {
-            if (fs.existsSync(CONFIG_FILE)) {
-                let configs = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8').toString());
+            if (fs.existsSync(MAIN_CONFIG)) {
+                let configs = JSON.parse(fs.readFileSync(MAIN_CONFIG, 'utf8').toString());
                 event.sender.send('command:response', {
                     command: 'configuration',
                     data: configs
