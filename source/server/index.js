@@ -2,37 +2,8 @@ import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
 import path from 'path'
 import {ProcessManager} from "./utils/ProcessManager";
 
-const isDev = require('electron-is-dev');
 const log = require('electron-log');
 log.transports.file.level = 'info';
-
-const {autoUpdater} = require("electron-updater");
-autoUpdater.setFeedURL('http://127.0.0.1:9000/releases/win');
-autoUpdater.logger = log;
-
-autoUpdater.on('checking-for-update', () => {
-    log.info('Checking for update...');
-});
-
-autoUpdater.on('update-available', () => {
-    log.info('Update available.');
-});
-
-autoUpdater.on('update-not-available', () => {
-    log.info('Update not available.');
-});
-
-autoUpdater.on('error', () => {
-    log.info('Error in auto-updater.');
-});
-
-autoUpdater.on('download-progress', (object) => {
-    log.info("Download speed: " + object.bytesPerSecond);
-});
-
-autoUpdater.on('update-downloaded', () => {
-    autoUpdater.quitAndInstall();
-});
 
 if (require('electron-squirrel-startup'))
     app.quit();

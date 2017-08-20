@@ -49,6 +49,10 @@
     "mac": {
       "icon": "build/icons/icon.icns"
     },
+    "squirrelWindows": {
+      "remoteReleases": "https://github.com/minhdtb/esminer-public",
+      "msi": true
+    },
     "win": {
       "icon": "build/icons/icon.ico",
       "target": "squirrel"
