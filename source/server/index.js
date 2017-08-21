@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
+import {app, BrowserWindow, dialog, ipcMain, Menu, Tray} from 'electron'
 import path from 'path'
 import {ProcessManager} from "./utils/ProcessManager";
 
@@ -8,7 +8,7 @@ const log = require('electron-log');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
-log.info('App starting...');
+log.info('Application is starting...');
 
 const _ = require('lodash');
 const fs = require('fs');
@@ -23,6 +23,10 @@ const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
 let claymoreProcess;
 let gpuzProcess;
+
+process.on('uncaughtException', error => {
+    log.error(error)
+});
 
 function connect(host, port, options) {
     if (!claymoreProcess)
@@ -168,17 +172,8 @@ if (isSecondInstance) {
     app.quit()
 }
 
-const appFolder = path.dirname(process.execPath);
-const updateExe = path.resolve(appFolder, '..', 'Update.exe');
-const exeName = path.basename(process.execPath);
-
 app.setLoginItemSettings({
     openAtLogin: true,
-    path: updateExe,
-    args: [
-        '--processStart', `"${exeName}"`,
-        '--process-start-args', `"--hidden"`
-    ]
 });
 
 app.on('ready', () => {
@@ -245,13 +240,25 @@ app.on('ready', () => {
         {
             label: 'Quit',
             click: function () {
-                app.quit();
+                dialog.showMessageBox({
+                    type: 'question',
+                    buttons: ['Yes', 'No'],
+                    title: 'ESMINER',
+                    message: 'Do you really want to quit?'
+                }, function (response) {
+                    if (response === 0) {
+                        app.quit();
+                    }
+                })
             }
         }
     ]);
 
     tray.setToolTip('ESMINER Pro.');
     tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => {
+        mainWindow.show();
+    });
 
     ipcMain.on('command:request', (event, data) => {
         if (data.command === 'start') {
@@ -319,27 +326,15 @@ app.on('before-quit', () => {
     app.quitting = true
 });
 
-autoUpdater.on('checking-for-update', () => {
-    log.info('checking-for-update');
-});
-
-autoUpdater.on('update-available', () => {
-    log.info('update-available');
-});
-
-autoUpdater.on('update-not-available', () => {
-    log.info('update-not-available');
-});
-
-autoUpdater.on('error', (error) => {
-    log.info(error);
-});
-
-autoUpdater.on('download-progress', () => {
-    log.info('download-progress');
-});
-
 autoUpdater.on('update-downloaded', () => {
-    log.info('update-downloaded');
-    autoUpdater.quitAndInstall();
+    dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'ESMINER Update',
+        message: 'A new version is available. Do you want to update now?'
+    }, function (response) {
+        if (response === 0) {
+            autoUpdater.quitAndInstall();
+        }
+    })
 });

@@ -1,8 +1,8 @@
 {
   "name": "esminer",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "author": "minhdtb <minhdtb.83@gmail.com>",
-  "description": "ESMINER Pro v 1.0.2",
+  "description": "ESMINER Pro",
   "license": "",
   "main": "./dist/server.js",
   "scripts": {
@@ -97,7 +97,6 @@
     "devtron": "^1.1.0",
     "electron": "^1.7.2",
     "electron-builder": "^19.22.1",
-    "electron-builder-squirrel-windows": "^19.22.1",
     "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.0.1",
     "electron-is-dev": "^0.3.0",

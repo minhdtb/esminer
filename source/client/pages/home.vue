@@ -27,7 +27,10 @@
             </v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex sm12 style="text-align: center">
+            <v-flex sm4>
+                <div style="margin-left: 3px">v{{version}}</div>
+            </v-flex>
+            <v-flex sm4 style="text-align: center">
                 <v-btn v-if="!isRunning" primary style="width: 250px" @click="start()">
                     <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
                     START MINING
@@ -38,10 +41,12 @@
                 </v-btn>
             </v-flex>
         </v-layout>
+
+
     </div>
 </template>
 <script>
-    import {ipcRenderer} from 'electron'
+    import {ipcRenderer, remote} from 'electron'
     import dashboard from '../components/dashboard.vue'
     import configuration from '../components/configuration.vue'
 
@@ -53,6 +58,7 @@
         data() {
             return {
                 tabs: ['dashboard', 'configuration'],
+                version: remote.app.getVersion(),
                 active: null
             }
         },
