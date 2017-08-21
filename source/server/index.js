@@ -2,8 +2,13 @@ import {app, BrowserWindow, ipcMain, Menu, Tray} from 'electron'
 import path from 'path'
 import {ProcessManager} from "./utils/ProcessManager";
 
+const isDev = require('electron-is-dev');
+const {autoUpdater} = require("electron-updater");
 const log = require('electron-log');
-log.transports.file.level = 'info';
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
 
 const _ = require('lodash');
 const fs = require('fs');
@@ -177,6 +182,9 @@ app.setLoginItemSettings({
 });
 
 app.on('ready', () => {
+    if (!isDev)
+        autoUpdater.checkForUpdates();
+
     mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
         frame: false,
@@ -309,4 +317,29 @@ app.on('before-quit', () => {
     }
 
     app.quitting = true
+});
+
+autoUpdater.on('checking-for-update', () => {
+    log.info('checking-for-update');
+});
+
+autoUpdater.on('update-available', () => {
+    log.info('update-available');
+});
+
+autoUpdater.on('update-not-available', () => {
+    log.info('update-not-available');
+});
+
+autoUpdater.on('error', (error) => {
+    log.info(error);
+});
+
+autoUpdater.on('download-progress', () => {
+    log.info('download-progress');
+});
+
+autoUpdater.on('update-downloaded', () => {
+    log.info('update-downloaded');
+    autoUpdater.quitAndInstall();
 });
