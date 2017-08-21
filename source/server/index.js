@@ -5,9 +5,6 @@ import {ProcessManager} from "./utils/ProcessManager";
 const log = require('electron-log');
 log.transports.file.level = 'info';
 
-if (require('electron-squirrel-startup'))
-    app.quit();
-
 const _ = require('lodash');
 const fs = require('fs');
 const MAIN_CONFIG = './config_main.json';
