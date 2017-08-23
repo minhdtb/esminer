@@ -12,8 +12,9 @@ log.info('Application is starting...');
 
 const _ = require('lodash');
 const fs = require('fs');
-const MAIN_CONFIG = './config_main.json';
-const RUN_CONFIG = './config_run.json';
+
+const MAIN_CONFIG = app.getPath('userData') + '/config_main.json';
+const RUN_CONFIG = app.getPath('userData') + '/config_run.json';
 
 const WINDOW_WIDTH = 1000;
 const WINDOW_HEIGHT = 725;
