@@ -1,5 +1,5 @@
 import {app, BrowserWindow, dialog, ipcMain, Menu, Tray} from 'electron'
-import path from 'path'
+import {resolve} from 'path'
 import {ProcessManager} from "./utils/ProcessManager";
 
 const isDev = require('electron-is-dev');
@@ -25,7 +25,7 @@ const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 let claymoreProcess;
 let gpuzProcess;
 
-process.on('uncaughtException', error => {
+(process as NodeJS.EventEmitter).on('uncaughtException', error => {
     log.error(error)
 });
 
@@ -49,7 +49,7 @@ function connect(host, port, options) {
         }, options.timeout ? options.timeout : 1000);
     });
 
-    socket.on('error', (e) => {
+    socket.on('error', () => {
         /* do nothing */
     });
 
@@ -186,7 +186,7 @@ app.on('ready', () => {
         frame: false,
         width: WINDOW_WIDTH,
         height: WINDOW_HEIGHT,
-        icon: path.resolve(__dirname, '../../static/images/logo.ico'),
+        icon: resolve(__dirname, '../../static/images/logo.ico'),
         show: false,
         backgroundColor: '#303030'
     });
@@ -220,7 +220,7 @@ app.on('ready', () => {
         }
     });
 
-    tray = new Tray(path.resolve(__dirname, '../../static/images/logo.ico'));
+    tray = new Tray(resolve(__dirname, '../../static/images/logo.ico'));
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show',
@@ -231,7 +231,7 @@ app.on('ready', () => {
         {
             label: 'Run GPU-Z',
             click: function () {
-                gpuzProcess = new ProcessManager(path.resolve(__dirname, '../../dist/gpuz'), 'GPU-Z.exe');
+                gpuzProcess = new ProcessManager(resolve(__dirname, '../../dist/gpuz'), 'GPU-Z.exe');
                 gpuzProcess.start([], 2);
             }
         },
@@ -268,7 +268,7 @@ app.on('ready', () => {
             fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
             /* start claymore */
-            claymoreProcess = new ProcessManager(path.resolve(__dirname, '../../dist/claymore'), 'EthDcrMiner64.exe');
+            claymoreProcess = new ProcessManager(resolve(__dirname, '../../dist/claymore'), 'EthDcrMiner64.exe');
             claymoreProcess.on('start', () => {
                 event.sender.send('process:status', 'start');
 

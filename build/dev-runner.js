@@ -79,7 +79,7 @@ function startRenderer() {
 
 function startMain() {
     return new Promise((resolve, reject) => {
-        mainConfig.entry.server = [path.join(__dirname, '../source/server/index.dev.js')].concat(mainConfig.entry.server);
+        mainConfig.entry.server = [path.join(__dirname, '../source/server/index.dev.ts')].concat(mainConfig.entry.server);
 
         const compiler = webpack(mainConfig);
 

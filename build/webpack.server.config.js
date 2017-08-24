@@ -10,7 +10,7 @@ const BabiliWebpackPlugin = require('babili-webpack-plugin');
 
 let mainConfig = {
     entry: {
-        server: path.join(__dirname, '../source/server/index.js')
+        server: path.join(__dirname, '../source/server/index.ts')
     },
     externals: [
         ...Object.keys(dependencies || {})
@@ -20,6 +20,11 @@ let mainConfig = {
             {
                 test: /\.js$/,
                 use: 'babel-loader',
+                exclude: /node_modules/
+            },
+            {
+                test: /\.ts$/,
+                use: 'ts-loader',
                 exclude: /node_modules/
             },
             {
@@ -41,7 +46,7 @@ let mainConfig = {
         new webpack.NoEmitOnErrorsPlugin()
     ],
     resolve: {
-        extensions: ['.js', '.json', '.node']
+        extensions: ['.js', '.ts', '.json', '.node']
     },
     target: 'electron-main'
 };

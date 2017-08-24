@@ -1,4 +1,5 @@
-const EventEmitter = require('events').EventEmitter;
+import {EventEmitter} from 'events'
+
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
 const runas = require('runas');
@@ -6,6 +7,10 @@ const runas = require('runas');
 const path = require('path');
 
 export class ProcessManager extends EventEmitter {
+
+    private _process: any;
+    private _dir: string;
+    private _name: string;
 
     constructor(dir, name) {
         super();

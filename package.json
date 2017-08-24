@@ -73,6 +73,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "runas": "^3.1.1",
+    "ts-loader": "^2.3.3",
     "vue": "^2.3.3",
     "vue-electron": "^1.0.6",
     "vue-router": "^2.5.3",
