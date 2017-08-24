@@ -3,3 +3,7 @@ declare namespace Electron {
         quitting: boolean
     }
 }
+
+declare module "*.vue" {
+
+}
