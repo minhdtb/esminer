@@ -1,14 +1,17 @@
 import {EventEmitter} from 'events'
+import {ChildProcess, exec, spawn} from "child_process";
+import {IPlugin} from "./IPlugin";
 
-const exec = require('child_process').exec;
-const spawn = require('child_process').spawn;
 const runas = require('runas');
-
 const path = require('path');
 
-export class ProcessManager extends EventEmitter {
+export class Plugin extends EventEmitter implements IPlugin {
 
-    private _process: any;
+    public static EXEC_MODE = 0;
+    public static SPAWN_MODE = 1;
+    public static RUNAS_MODE = 2;
+
+    private _process: ChildProcess;
     private _dir: string;
     private _name: string;
 
@@ -20,15 +23,15 @@ export class ProcessManager extends EventEmitter {
     }
 
     start(params, mode) {
-        if (!mode) {
+        if (!mode || mode === Plugin.EXEC_MODE) {
             this._process = exec('start /i /wait ' + this._name + ' ' + params.join(' '), {
                 cwd: this._dir
             });
-        } else if (mode === 1) {
+        } else if (mode === Plugin.SPAWN_MODE) {
             this._process = spawn(this._name, params, {
                 cwd: this._dir
             });
-        } else if (mode === 2) {
+        } else if (mode === Plugin.RUNAS_MODE) {
             if (params && params.length) {
                 runas(path.join(this._dir, this._name), params.join(' '));
             } else {
