@@ -1,4 +1,4 @@
-import {Plugin} from "./base/Plugin";
+import {BASE_PATH, Plugin} from "./base/Plugin";
 import {resolve} from "path";
 
 const _ = require('lodash');
@@ -6,7 +6,7 @@ const _ = require('lodash');
 export class Claymore extends Plugin {
 
     constructor() {
-        super(resolve(__dirname, '../../../dist/claymore'), 'EthDcrMiner64.exe');
+        super(resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe');
 
         this.on('start', () => {
             this.connect('localhost', 3333, {

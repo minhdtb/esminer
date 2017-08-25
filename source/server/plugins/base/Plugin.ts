@@ -5,6 +5,9 @@ import {IPlugin} from "./IPlugin";
 const runas = require('runas');
 const path = require('path');
 
+const isDev = require('electron-is-dev');
+export const BASE_PATH = isDev ? '../../../' : '../../';
+
 export class Plugin extends EventEmitter implements IPlugin {
 
     public static EXEC_MODE = 0;
