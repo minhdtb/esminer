@@ -10,7 +10,6 @@ const log = require('electron-log');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
-log.info('Application is starting...');
 
 const _ = require('lodash');
 const fs = require('fs');
@@ -27,12 +26,15 @@ const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 let claymoreProcess;
 let gpuzProcess;
 
+let mainWindow;
+let tray;
+
 (process as NodeJS.EventEmitter).on('uncaughtException', error => {
     log.error(error)
 });
 
-function getParams() {
-    let config = JSON.parse(fs.readFileSync(MAIN_CONFIG, 'utf8').toString());
+function readParams(filename: string) {
+    let config = JSON.parse(fs.readFileSync(filename, 'utf8').toString());
 
     let r = _.filter(_.map(_.keys(_.omit(config, ['runMode'])), (key) => {
         let value = config[key];
@@ -54,9 +56,6 @@ function getParams() {
         runMode: config.runMode
     };
 }
-
-let mainWindow;
-let tray;
 
 const isSecondInstance = app.makeSingleInstance(() => {
     if (mainWindow) {
@@ -163,10 +162,10 @@ app.on('ready', () => {
         mainWindow.show();
     });
 
-    ipcMain.on('command:request', (event, data) => {
-        if (data.command === 'start') {
+    ipcMain.on('command:request', (event, response) => {
+        if (response.command === 'start') {
             /* save config */
-            fs.writeFileSync(MAIN_CONFIG, JSON.stringify(data.data), 'utf-8');
+            fs.writeFileSync(MAIN_CONFIG, JSON.stringify(response.data), 'utf-8');
             fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
             /* start claymore */
@@ -183,16 +182,16 @@ app.on('ready', () => {
                 event.sender.send('process:data', data);
             });
 
-            let currentParams = getParams();
+            let currentParams = readParams(MAIN_CONFIG);
             claymoreProcess.start(currentParams.params, currentParams.runMode);
-        } else if (data.command === 'stop') {
+        } else if (response.command === 'stop') {
             if (claymoreProcess) {
                 claymoreProcess.stop();
                 claymoreProcess = null;
             }
 
             fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
-        } else if (data.command === 'configuration') {
+        } else if (response.command === 'configuration') {
             if (fs.existsSync(MAIN_CONFIG)) {
                 let configs = JSON.parse(fs.readFileSync(MAIN_CONFIG, 'utf8').toString());
                 event.sender.send('command:response', {
