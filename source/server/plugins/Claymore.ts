@@ -1,12 +1,12 @@
-import {BASE_PATH, Plugin} from "./base/Plugin";
+import {BASE_PATH, Plugin, ProcessType} from "./base/Plugin";
 import {resolve} from "path";
-
-const _ = require('lodash');
+import * as log from 'electron-log';
+import * as _ from 'lodash';
 
 export class Claymore extends Plugin {
 
     constructor() {
-        super(resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe');
+        super(resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe', ProcessType.PROCESS_MINER_CLAYMORE);
 
         this.on('start', () => {
             this.connect('localhost', 3333, {
@@ -85,7 +85,7 @@ export class Claymore extends Plugin {
 
             let gpuInfo = _.map(info1, (item, i) => {
                 return {
-                    hashRate: parseInt(item),
+                    hashRate: parseInt(item as any),
                     hashRateDCR: info3[i] === 'off' ? 0 : parseInt(info3[i]),
                     temperature: parseInt(info4[i][0]),
                     fanSpeed: parseInt(info4[i][1])
@@ -114,7 +114,7 @@ export class Claymore extends Plugin {
             return dataInfo;
         }
         catch (e) {
-            console.log(e);
+            log.error(e);
         }
 
         return dataInfo;

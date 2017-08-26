@@ -1,12 +1,21 @@
 import {EventEmitter} from 'events'
 import {ChildProcess, exec, spawn} from "child_process";
 import {IPlugin} from "./IPlugin";
+import * as AMQP from "amqplib";
+import * as crypto from 'crypto';
+import * as path from 'path';
 
 const runas = require('runas');
-const path = require('path');
-
 const isDev = require('electron-is-dev');
+
+const AMQP_URI = 'amqp://localhost';
+
 export const BASE_PATH = isDev ? '../../../' : '../../';
+
+export enum ProcessType {
+    PROCESS_MINER_CLAYMORE,
+    PROCESS_EXTERNAL
+}
 
 export class Plugin extends EventEmitter implements IPlugin {
 
@@ -18,11 +27,43 @@ export class Plugin extends EventEmitter implements IPlugin {
     private _dir: string;
     private _name: string;
 
-    constructor(dir, name) {
+    private _processType: ProcessType;
+
+    constructor(dir, name, type: ProcessType) {
         super();
         this._process = null;
         this._dir = dir;
         this._name = name;
+
+        require('getmac').getMac((error, macAddress) => {
+            if (error)
+                throw error;
+
+            let exchange_name = crypto.createHash('md5').update(macAddress).digest("hex") + '_miner_data';
+
+            if (type !== ProcessType.PROCESS_EXTERNAL) {
+                AMQP.connect(AMQP_URI)
+                    .then(connection => {
+                        return connection
+                            .createChannel()
+                            .then(channel => {
+                                channel.assertExchange(exchange_name, 'fanout', {durable: false});
+                                this.on('data', data => {
+                                    let msg = JSON.stringify({
+                                        type: type,
+                                        data: data
+                                    });
+
+                                    channel.publish(exchange_name, '', new Buffer(msg))
+                                });
+                            })
+                    })
+            }
+        });
+    }
+
+    getType(): ProcessType {
+        return this._processType;
     }
 
     start(params, mode) {

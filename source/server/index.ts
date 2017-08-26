@@ -3,16 +3,15 @@ import {resolve} from 'path'
 import {Claymore} from "./plugins/Claymore";
 import {Gpuz} from "./plugins/Gpuz";
 import {Plugin} from "./plugins/base/Plugin";
+import * as log from 'electron-log';
+import * as _ from 'lodash';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
 
 const isDev = require('electron-is-dev');
 const {autoUpdater} = require("electron-updater");
-const log = require('electron-log');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
-
-const _ = require('lodash');
-const fs = require('fs');
 
 const MAIN_CONFIG = app.getPath('userData') + '/config_main.json';
 const RUN_CONFIG = app.getPath('userData') + '/config_run.json';
@@ -34,7 +33,7 @@ let tray;
 });
 
 function readParams(filename: string) {
-    let config = JSON.parse(fs.readFileSync(filename, 'utf8').toString());
+    let config = JSON.parse(readFileSync(filename, 'utf8').toString());
 
     let r = _.filter(_.map(_.keys(_.omit(config, ['runMode'])), (key) => {
         let value = config[key];
@@ -113,8 +112,8 @@ app.on('ready', () => {
     });
 
     mainWindow.webContents.on('did-finish-load', () => {
-        if (fs.existsSync(RUN_CONFIG)) {
-            const runConfig = JSON.parse(fs.readFileSync(RUN_CONFIG, 'utf8').toString());
+        if (existsSync(RUN_CONFIG)) {
+            const runConfig = JSON.parse(readFileSync(RUN_CONFIG, 'utf8').toString());
             if (runConfig.run) {
                 mainWindow.webContents.send('process:force-start');
             }
@@ -165,8 +164,8 @@ app.on('ready', () => {
     ipcMain.on('command:request', (event, response) => {
         if (response.command === 'start') {
             /* save config */
-            fs.writeFileSync(MAIN_CONFIG, JSON.stringify(response.data), 'utf-8');
-            fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
+            writeFileSync(MAIN_CONFIG, JSON.stringify(response.data), 'utf-8');
+            writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
             /* start claymore */
             claymoreProcess = new Claymore();
@@ -190,10 +189,10 @@ app.on('ready', () => {
                 claymoreProcess = null;
             }
 
-            fs.writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
+            writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
         } else if (response.command === 'configuration') {
-            if (fs.existsSync(MAIN_CONFIG)) {
-                let configs = JSON.parse(fs.readFileSync(MAIN_CONFIG, 'utf8').toString());
+            if (existsSync(MAIN_CONFIG)) {
+                let configs = JSON.parse(readFileSync(MAIN_CONFIG, 'utf8').toString());
                 event.sender.send('command:response', {
                     command: 'configuration',
                     data: configs
