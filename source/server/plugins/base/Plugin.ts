@@ -34,6 +34,7 @@ export class Plugin extends EventEmitter implements IPlugin {
         this._process = null;
         this._dir = dir;
         this._name = name;
+        this._processType = type;
 
         require('getmac').getMac((error, macAddress) => {
             if (error)
@@ -48,6 +49,7 @@ export class Plugin extends EventEmitter implements IPlugin {
                             .createChannel()
                             .then(channel => {
                                 channel.assertExchange(exchange_name, 'fanout', {durable: false});
+
                                 this.on('data', data => {
                                     let msg = JSON.stringify({
                                         type: type,
