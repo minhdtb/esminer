@@ -21,7 +21,7 @@ const routes = [
 
 const router = new VueRouter({routes});
 
-const API_URL = 'http://auth.esminer.com/api';
+const API_URL = 'http://localhost:3000/api';
 
 const store = new Vuex.Store({
     state: {

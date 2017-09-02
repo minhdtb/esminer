@@ -83,10 +83,10 @@
                         password: this.password
                     }).then(response => {
                         this.loading = false;
-                        let user = response.data;
-                        if (user) {
-                            localStorage.setItem('authUser', JSON.stringify(user));
-                            this.$store.commit('SET_AUTH', user);
+                        let data = response.data;
+                        if (data.ok) {
+                            localStorage.setItem('authUser', JSON.stringify(data.user));
+                            this.$store.commit('SET_AUTH', data.user);
                             this.$router.push('/')
                         }
                     }).catch(e => {
