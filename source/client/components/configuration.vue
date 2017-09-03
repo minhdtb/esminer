@@ -85,14 +85,9 @@
             }
         },
         mounted() {
-            ipcRenderer.on('command:response', (event, data) => {
-                if (data.command === 'configuration')
-                    this.$store.commit('SET_CONFIG', data.data);
+            ipcRenderer.send('request', {
+                command: 'get:configuration'
             });
-
-            ipcRenderer.send('command:request', {
-                command: 'configuration'
-            })
         }
     }
 </script>

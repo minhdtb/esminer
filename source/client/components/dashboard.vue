@@ -105,7 +105,6 @@
     </div>
 </template>
 <script>
-    import {ipcRenderer} from 'electron'
     import _ from 'lodash'
     import moment from 'moment'
 
@@ -145,7 +144,9 @@
             }
         },
         mounted() {
-            ipcRenderer.on('process:data', (event, data) => {
+            this.$store.watch(state => {
+                return state.data
+            }, data => {
                 this.totalHashRate = (data.totalHashRate / 1000).toFixed(3);
                 this.totalShare = data.numberOfShare;
                 this.gpuList = _.map(data.gpuInfo, function (item, i) {

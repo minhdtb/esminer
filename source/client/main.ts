@@ -9,6 +9,8 @@ import Login from './pages/login.vue'
 import Register from './pages/register.vue'
 import axios from 'axios'
 
+import {ipcRenderer} from 'electron'
+
 Vue.use(VueRouter);
 Vue.use(Vuetify);
 Vue.use(Vuex);
@@ -28,6 +30,7 @@ const store = new Vuex.Store({
         authUser: null,
         running: false,
         status: null,
+        data: {},
         config: {
             epool: null,
             ewal: null,
@@ -60,6 +63,9 @@ const store = new Vuex.Store({
         SET_CONFIG(state, config) {
             state.config = config;
         },
+        SET_DATA(state, data) {
+            state.data = data
+        },
         SET_STATUS(state, status) {
             state.status = status;
         }
@@ -68,6 +74,28 @@ const store = new Vuex.Store({
         isLoggedIn(state) {
             return !!state.authUser;
         }
+    }
+});
+
+ipcRenderer.on('status', (event, data) => {
+    store.commit('SET_RUNNING', (data === 'start'));
+
+    if (data === 'start') {
+        store.commit('SET_STATUS', 'Initializing...')
+    }
+
+    if (data === 'stop') {
+        store.commit('SET_STATUS', 'Stopped.')
+    }
+});
+
+ipcRenderer.on('data', (event, data) => {
+    store.commit('SET_DATA', data);
+});
+
+ipcRenderer.on('response', (event, data) => {
+    if (data.command === 'get:configuration') {
+        store.commit('SET_CONFIG', data.data);
     }
 });
 

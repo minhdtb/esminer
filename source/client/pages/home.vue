@@ -71,18 +71,6 @@
             }
         },
         mounted() {
-            ipcRenderer.on('process:status', (event, data) => {
-                this.$store.commit('SET_RUNNING', (data === 'start'));
-
-                if (data === 'start') {
-                    this.$store.commit('SET_STATUS', 'Initializing...')
-                }
-
-                if (data === 'stop') {
-                    this.$store.commit('SET_STATUS', 'Stopped.')
-                }
-            });
-
             ipcRenderer.on('process:force-start', () => {
                 this.start();
             });
