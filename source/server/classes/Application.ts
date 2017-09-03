@@ -1,5 +1,4 @@
 import {app, BrowserWindow, dialog, ipcMain, Menu, Tray} from 'electron'
-import {resolve} from 'path'
 import {existsSync, readFileSync, writeFileSync} from 'fs'
 import {Claymore} from "../plugins/Claymore"
 import {Gpuz} from "../plugins/Gpuz"
@@ -7,6 +6,7 @@ import {Plugin} from "../plugins/base/Plugin"
 import * as _ from 'lodash'
 import * as log from 'electron-log'
 import * as crypto from 'crypto';
+import {join} from 'path'
 
 const {autoUpdater} = require("electron-updater");
 const isDev = require('electron-is-dev');
@@ -111,7 +111,7 @@ export default class Application {
             frame: false,
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
-            icon: resolve(__dirname, '../../../static/images/logo.ico'),
+            icon: join(process.env.APP_PATH, 'static/images/logo.ico'),
             show: false,
             backgroundColor: '#303030'
         });
@@ -147,7 +147,7 @@ export default class Application {
             }
         });
 
-        this.tray = new Tray(resolve(__dirname, '../../../static/images/logo.ico'));
+        this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
         const contextMenu = Menu.buildFromTemplate([
             {
                 label: 'Show',
