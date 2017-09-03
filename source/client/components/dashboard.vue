@@ -82,9 +82,9 @@
                 <v-card height="90px" style="padding: 5px">
                     <v-layout row>
                         <v-flex sm6>
-                            <div v-if="!!$store.state.status" class="totalHashRate"
+                            <div v-if="!!status" class="totalHashRate"
                                  style="color: #87b9f5; font-size: medium">
-                                Status : {{$store.state.status}}
+                                Status : {{status}}
                             </div>
                         </v-flex>
                         <v-flex sm6 style="text-align: right">
@@ -141,6 +141,11 @@
                 pools: [],
                 version: null,
                 runningTime: null,
+            }
+        },
+        computed: {
+            status() {
+                return this.$store.state.status;
             }
         },
         mounted() {
