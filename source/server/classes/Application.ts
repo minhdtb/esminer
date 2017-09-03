@@ -24,6 +24,7 @@ export default class Application {
     private mainWindow: Electron.BrowserWindow;
     private tray: Electron.Tray;
     private claymoreProcess: Claymore;
+    private appId: string;
 
     constructor() {
         autoUpdater.logger = log;
@@ -48,9 +49,11 @@ export default class Application {
         app.on('ready', () => {
             this.onAppReady();
         });
+
         app.on('window-all-closed', () => {
             this.onAppClosed();
         });
+
         app.on('before-quit', () => {
             this.onAppBeforeQuit();
         });
@@ -99,6 +102,7 @@ export default class Application {
 
             app.setLoginItemSettings({
                 openAtLogin: true,
+                openAsHidden: true
             });
         }
 
@@ -111,6 +115,8 @@ export default class Application {
             show: false,
             backgroundColor: '#303030'
         });
+
+        this.mainWindow.application = this;
 
         const mainURL = process.env.NODE_ENV === 'development'
             ? `http://localhost:9080`
@@ -152,7 +158,7 @@ export default class Application {
             {
                 label: 'Run GPU-Z',
                 click: () => {
-                    let gpuzProcess = new Gpuz();
+                    let gpuzProcess = new Gpuz(this);
                     gpuzProcess.start([], Plugin.RUNAS_MODE);
                 }
             },
@@ -213,7 +219,7 @@ export default class Application {
                 writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
                 /* start claymore */
-                this.claymoreProcess = new Claymore();
+                this.claymoreProcess = new Claymore(this);
                 this.claymoreProcess.on('start', () => sender.send('status', 'start'));
                 this.claymoreProcess.on('stop', () => sender.send('status', 'stop'));
                 this.claymoreProcess.on('data', data => sender.send('data', data));
@@ -246,6 +252,9 @@ export default class Application {
     }
 
     public async getId() {
+        if (this.appId)
+            return this.appId;
+
         let macAddress = await new Promise<string>((resolve, reject) => {
             require('getmac').getMac((error, macAddress) => {
                 if (error)
@@ -255,6 +264,8 @@ export default class Application {
             });
         });
 
-        return crypto.createHash('md5').update(macAddress).digest("hex");
+        this.appId = crypto.createHash('md5').update(macAddress).digest("hex");
+
+        return this.appId;
     }
 }

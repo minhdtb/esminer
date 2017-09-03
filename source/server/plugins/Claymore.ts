@@ -2,11 +2,12 @@ import {BASE_PATH, Plugin, ProcessType} from "./base/Plugin";
 import {resolve} from "path";
 import * as log from 'electron-log';
 import * as _ from 'lodash';
+import Application from "../classes/Application";
 
 export class Claymore extends Plugin {
 
-    constructor() {
-        super(resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe', ProcessType.PROCESS_MINER_CLAYMORE);
+    constructor(app: Application) {
+        super(app, resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe', ProcessType.PROCESS_MINER_CLAYMORE);
 
         this.on('start', () => {
             this.connect('localhost', 3333, {

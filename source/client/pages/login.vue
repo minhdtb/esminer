@@ -42,6 +42,9 @@
 </template>
 <script>
     import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+    import * as crypto from 'crypto';
+    import {remote} from 'electron'
+    import axios from 'axios'
 
     export default {
         components: {
@@ -87,14 +90,31 @@
                         if (data.ok) {
                             localStorage.setItem('authUser', JSON.stringify(data.user));
                             this.$store.commit('SET_AUTH', data.user);
+
+                            remote.getCurrentWindow().application.getId().then(id => {
+                                axios.create({
+                                    baseURL: 'http://localhost:3000/api'
+                                }).post('/unit/register', {
+                                    unitId: id,
+                                    userId: data.user._id
+                                }).then(res => {
+                                    let data = res.data;
+                                    if (data.ok)
+                                        console.log('unit name = ', data.unitName)
+                                })
+                            });
+
                             this.$router.push('/')
                         }
                     }).catch(e => {
                         this.loading = false;
-                        this.errors.push(e.response.data);
+                        if (e.response)
+                            this.errors.push(e.response.data);
+                        else
+                            this.errors.push(e.message);
                     });
                 }
-            }
+            },
         }
     }
 </script>
