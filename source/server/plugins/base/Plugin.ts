@@ -37,7 +37,7 @@ export class Plugin extends EventEmitter implements IPlugin {
 
     public async initialize() {
         if (this._processType !== ProcessType.PROCESS_EXTERNAL) {
-            let CHANNEL_DATA = await 'esminer' + this._app.getId(this._app.getUser().username) + ':data';
+            let CHANNEL_DATA =  'esminer:' +  await this._app.getId(this._app.getUser().username) + ':data';
 
             this.on('data', data => {
                 let msg = JSON.stringify({
