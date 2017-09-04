@@ -28,7 +28,6 @@
                         </tr>
                         </tbody>
                     </table>
-
                 </v-card>
             </v-flex>
         </v-layout>

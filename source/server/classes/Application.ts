@@ -7,6 +7,7 @@ import * as _ from 'lodash'
 import * as log from 'electron-log'
 import * as crypto from 'crypto';
 import {join} from 'path'
+import {Client, connect} from 'mqtt'
 
 const {autoUpdater} = require("electron-updater");
 const isDev = require('electron-is-dev');
@@ -19,6 +20,8 @@ const WINDOW_HEIGHT = 725;
 const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
+const MQTT_URI = 'ws://test.mosquitto.org:8081';
+
 export default class Application {
 
     private mainWindow: Electron.BrowserWindow;
@@ -26,6 +29,8 @@ export default class Application {
     private claymoreProcess: Claymore;
     private appId: string;
     private user: any;
+
+    public static mqttClient: Client = connect(MQTT_URI);
 
     constructor() {
         autoUpdater.logger = log;

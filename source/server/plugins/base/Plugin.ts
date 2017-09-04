@@ -1,14 +1,11 @@
 import {EventEmitter} from 'events'
 import {ChildProcess, exec, spawn} from "child_process";
 import {IPlugin} from "./IPlugin";
-import * as AMQP from "amqplib";
 import * as path from 'path';
 import Application from "../../classes/Application";
 
 const runas = require('runas');
 const isDev = require('electron-is-dev');
-
-const AMQP_URI = 'amqp://localhost';
 
 export const BASE_PATH = isDev ? '../../../' : '../../';
 
@@ -40,24 +37,16 @@ export class Plugin extends EventEmitter implements IPlugin {
 
     public async initialize() {
         if (this._processType !== ProcessType.PROCESS_EXTERNAL) {
-            let exchange_name = await this._app.getId(this._app.getUser().username) + '_miner_data';
+            let CHANNEL_DATA = await 'esminer' + this._app.getId(this._app.getUser().username) + ':data';
 
-            let connection = await AMQP.connect(AMQP_URI);
-            if (connection) {
-                let channel = await connection.createChannel();
-                if (channel) {
-                    channel.assertExchange(exchange_name, 'fanout', {durable: false});
+            this.on('data', data => {
+                let msg = JSON.stringify({
+                    type: this._processType,
+                    data: data
+                });
 
-                    this.on('data', data => {
-                        let msg = JSON.stringify({
-                            type: this._processType,
-                            data: data
-                        });
-
-                        channel.publish(exchange_name, '', new Buffer(msg))
-                    });
-                }
-            }
+                Application.mqttClient.publish(CHANNEL_DATA, msg);
+            });
         }
     }
 

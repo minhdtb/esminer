@@ -7,4 +7,4 @@ node_modules/
 releases
 dist
 config.json
-test.js
+test*
