@@ -71,19 +71,24 @@
             }
         },
         mounted() {
+            ipcRenderer.send('request', {
+                command: 'set:user',
+                data: this.$store.state.authUser
+            });
+
             ipcRenderer.on('process:force-start', () => {
                 this.start();
             });
         },
         methods: {
             start() {
-                ipcRenderer.send('command:request', {
+                ipcRenderer.send('request', {
                     command: 'start',
                     data: this.$store.state.config
                 });
             },
             stop() {
-                ipcRenderer.send('command:request', {
+                ipcRenderer.send('request', {
                     command: 'stop'
                 });
             }

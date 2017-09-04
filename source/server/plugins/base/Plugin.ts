@@ -36,13 +36,11 @@ export class Plugin extends EventEmitter implements IPlugin {
         this._name = name;
         this._processType = type;
         this._app = app;
-
-        this.initialize().then();
     }
 
-    async initialize() {
+    public async initialize() {
         if (this._processType !== ProcessType.PROCESS_EXTERNAL) {
-            let exchange_name = await this._app.getId() + '_miner_data';
+            let exchange_name = await this._app.getId(this._app.getUser().username) + '_miner_data';
 
             let connection = await AMQP.connect(AMQP_URI);
             if (connection) {

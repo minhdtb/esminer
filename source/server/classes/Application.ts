@@ -25,6 +25,7 @@ export default class Application {
     private tray: Electron.Tray;
     private claymoreProcess: Claymore;
     private appId: string;
+    private user: any;
 
     constructor() {
         autoUpdater.logger = log;
@@ -188,7 +189,7 @@ export default class Application {
             this.mainWindow.show();
         });
 
-        ipcMain.on('command:request', (event, response) => {
+        ipcMain.on('request', (event, response) => {
             this.onCommand(event.sender, response.command, response.data ? response.data : null)
         });
 
@@ -225,7 +226,10 @@ export default class Application {
                 this.claymoreProcess.on('data', data => sender.send('data', data));
 
                 let currentParams = this.readParams(MAIN_CONFIG);
-                this.claymoreProcess.start(currentParams.params, currentParams.runMode);
+                this.claymoreProcess.initialize().then(() => {
+                    this.claymoreProcess.start(currentParams.params, currentParams.runMode);
+                });
+
                 break;
             }
             case 'stop': {
@@ -237,8 +241,8 @@ export default class Application {
                 writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
                 break;
             }
-            case 'get:id': {
-
+            case 'set:user': {
+                this.user = data;
                 break;
             }
             case 'get:configuration': {
@@ -251,7 +255,11 @@ export default class Application {
         }
     }
 
-    public async getId() {
+    public getUser() {
+        return this.user;
+    }
+
+    public async getId(username: string) {
         if (this.appId)
             return this.appId;
 
@@ -264,7 +272,7 @@ export default class Application {
             });
         });
 
-        this.appId = crypto.createHash('md5').update(macAddress).digest("hex");
+        this.appId = crypto.createHash('md5').update(macAddress + username).digest("hex");
 
         return this.appId;
     }
