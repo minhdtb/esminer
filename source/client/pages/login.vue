@@ -1,17 +1,17 @@
 <template>
     <v-layout row style="margin-top: 10px">
         <v-flex sm6 offset-sm3 style="padding: 45px">
-            <form :submit.prevent="submit">
+            <v-form ref="form">
                 <v-card style="padding: 25px; text-align: center">
                     <v-layout row>
                         <v-flex sm12>
                             <img src="static/images/logo.png" style="width: 180px">
-                            <v-text-field label="Username" placeholder="Username" @blur="blur" @focus="focus"
+                            <v-text-field label="Username" placeholder="Username"
                                           v-on:keyup.native.enter.prevent="submit"
                                           v-model="username" :rules="[rules.username]" prepend-icon="fa-user fa-lg">
                             </v-text-field>
-                            <v-text-field label="Password" placeholder="Password" @blur="blur" @focus="focus"
-                                          v-model="password" :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
+                            <v-text-field label="Password" placeholder="Password" v-model="password"
+                                          :rules="[rules.password]" prepend-icon="fa-lock fa-lg"
                                           type="password" v-on:keyup.native.enter.prevent="submit">
                             </v-text-field>
                         </v-flex>
@@ -36,7 +36,7 @@
                         </v-flex>
                     </v-layout>
                 </v-card>
-            </form>
+            </v-form>
         </v-flex>
     </v-layout>
 </template>
@@ -52,65 +52,54 @@
         },
         data() {
             return {
-                initialize: true,
                 loading: false,
                 errors: [],
                 username: null,
                 password: null,
                 rules: {
                     username: (v) => {
-                        if (this.initialize) return true;
                         return !!v || 'Username is required.';
                     },
                     password: (v) => {
-                        if (this.initialize) return true;
                         return !!v || 'Password is required.';
                     }
                 }
             }
         },
         methods: {
-            focus() {
-                this.initialize = false;
-            },
-            blur() {
-                this.initialize = false;
-            },
             submit() {
-                this.initialize = false;
                 this.errors = [];
-                if (this.username && this.password) {
-                    this.loading = true;
-                    this.$store.dispatch('LOGIN', {
-                        username: this.username,
-                        password: this.password
-                    }).then(response => {
-                        this.loading = false;
-
-                        let data = response.data;
-                        if (data.ok) {
-                            remote.getCurrentWindow().application.getId(data.user.username).then(id => {
-                                axios.create({
-                                    baseURL: 'http://localhost:3000/api'
-                                }).post('/unit/register', {
-                                    unitId: id,
-                                    userId: data.user._id
-                                }).then(() => {
-                                    localStorage.setItem('authUser', JSON.stringify(data.user));
-                                    this.$store.commit('SET_AUTH', data.user);
-                                    this.$router.push('/')
-                                })
-                            });
-                        }
-                    }).catch(e => {
-                        this.loading = false;
-                        if (e.response) {
-                            let data = e.response.data;
-                            this.errors.push(data.message);
-                        }
-                        else
-                            this.errors.push(e.message);
-                    });
+                if (this.$refs.form.validate()) {
+                    if (this.username && this.password) {
+                        this.loading = true;
+                        this.$store.dispatch('LOGIN', {
+                            username: this.username,
+                            password: this.password
+                        }).then(response => {
+                            let data = response.data;
+                            if (data.ok) {
+                                remote.getCurrentWindow().application.getId(data.user.username).then(id => {
+                                    this.$store.dispatch('REGISTER_UNIT', {
+                                        unitId: id,
+                                        userId: data.user._id
+                                    }).then(() => {
+                                        localStorage.setItem('authUser', JSON.stringify(data.user));
+                                        this.$store.commit('SET_AUTH', data.user);
+                                        this.$router.push('/');
+                                        this.loading = false;
+                                    })
+                                });
+                            }
+                        }).catch(e => {
+                            this.loading = false;
+                            if (e.response) {
+                                let data = e.response.data;
+                                this.errors.push(data.message);
+                            }
+                            else
+                                this.errors.push(e.message);
+                        });
+                    }
                 }
             },
         }

@@ -260,7 +260,7 @@ export default class Application {
     }
 
     public async getId(username: string) {
-        if (this.appId)
+        if (this.appId && this.user.username === username)
             return this.appId;
 
         let macAddress = await new Promise<string>((resolve, reject) => {

@@ -3,10 +3,9 @@
         <v-layout row>
             <v-flex sm12>
                 <v-tabs dark v-model="active">
-                    <v-tabs-bar slot="activators" class="red">
+                    <v-tabs-bar class="red">
                         <v-tabs-item :disabled="tab === 'configuration'? isRunning: false" v-for="tab in tabs"
-                                     :key="tab"
-                                     :href="'#' + tab" ripple>
+                                     :key="tab" :href="'#' + tab" ripple>
                             <v-icon v-if="tab === 'dashboard'" style="margin-top: 3px">
                                 fa-home fa-lg fa-fw
                             </v-icon>
@@ -17,12 +16,14 @@
                         </v-tabs-item>
                         <v-tabs-slider class="yellow"></v-tabs-slider>
                     </v-tabs-bar>
-                    <v-tabs-content id="dashboard">
-                        <dashboard></dashboard>
-                    </v-tabs-content>
-                    <v-tabs-content id="configuration" style="height: 550px">
-                        <configuration></configuration>
-                    </v-tabs-content>
+                    <v-tabs-items>
+                        <v-tabs-content id="dashboard">
+                            <dashboard></dashboard>
+                        </v-tabs-content>
+                        <v-tabs-content id="configuration" style="height: 550px">
+                            <configuration></configuration>
+                        </v-tabs-content>
+                    </v-tabs-items>
                 </v-tabs>
             </v-flex>
         </v-layout>
@@ -41,8 +42,6 @@
                 </v-btn>
             </v-flex>
         </v-layout>
-
-
     </div>
 </template>
 <script>

@@ -51,6 +51,9 @@ const store = new Vuex.Store({
         },
         REGISTER(state, credentials) {
             return axios.post(`${API_URL}/register`, credentials);
+        },
+        REGISTER_UNIT(state, credentials) {
+            return axios.post(`${API_URL}/unit/register`, credentials);
         }
     },
     mutations: {
