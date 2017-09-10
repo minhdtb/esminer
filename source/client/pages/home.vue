@@ -78,6 +78,10 @@
             ipcRenderer.on('process:force-start', () => {
                 this.start();
             });
+
+            ipcRenderer.on('process:force-stop', () => {
+                this.stop();
+            });
         },
         methods: {
             start() {

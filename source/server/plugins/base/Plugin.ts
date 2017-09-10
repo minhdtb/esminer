@@ -35,21 +35,6 @@ export class Plugin extends EventEmitter implements IPlugin {
         this._app = app;
     }
 
-    public async initialize() {
-        if (this._processType !== ProcessType.PROCESS_EXTERNAL) {
-            let CHANNEL_DATA =  'esminer:' +  await this._app.getId(this._app.getUser().username) + ':data';
-
-            this.on('data', data => {
-                let msg = JSON.stringify({
-                    type: this._processType,
-                    data: data
-                });
-
-                Application.mqttClient.publish(CHANNEL_DATA, msg);
-            });
-        }
-    }
-
     getType(): ProcessType {
         return this._processType;
     }

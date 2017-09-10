@@ -20,7 +20,7 @@ const WINDOW_HEIGHT = 725;
 const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
-const MQTT_URI = 'ws://test.mosquitto.org:8081';
+const MQTT_URI = 'wss://mqtt.esminer.com:8083';
 
 export default class Application {
 
@@ -30,7 +30,10 @@ export default class Application {
     private appId: string;
     private user: any;
 
-    public static mqttClient: Client = connect(MQTT_URI);
+    public static mqttClient: Client = connect(MQTT_URI, {
+        username: 'minhdtb',
+        password: '123456'
+    });
 
     constructor() {
         autoUpdater.logger = log;
@@ -144,14 +147,32 @@ export default class Application {
             }
         });
 
-        this.mainWindow.webContents.on('did-finish-load', () => {
+        let onFinishLoad = async () => {
+            let CHANNEL_COMMAND = 'esminer:' + await this.getId(this.getUser().username) + ':command';
+
             if (existsSync(RUN_CONFIG)) {
                 const runConfig = JSON.parse(readFileSync(RUN_CONFIG, 'utf8').toString());
                 if (runConfig.run) {
                     this.mainWindow.webContents.send('process:force-start');
                 }
             }
-        });
+
+            Application.mqttClient.on('message', (topic, message) => {
+                if (topic === CHANNEL_COMMAND) {
+                    if (message.toString() === 'start') {
+                        this.mainWindow.webContents.send('process:force-start');
+                    }
+
+                    if (message.toString() === 'stop') {
+                        this.mainWindow.webContents.send('process:force-stop');
+                    }
+                }
+            });
+
+            Application.mqttClient.subscribe(CHANNEL_COMMAND);
+        };
+
+        this.mainWindow.webContents.on('did-finish-load', () => onFinishLoad());
 
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
         const contextMenu = Menu.buildFromTemplate([
@@ -194,9 +215,11 @@ export default class Application {
             this.mainWindow.show();
         });
 
-        ipcMain.on('request', (event, response) => {
-            this.onCommand(event.sender, response.command, response.data ? response.data : null)
-        });
+        let onRequest = async (event, response) => {
+            await this.onCommand(event.sender, response.command, response.data ? response.data : null)
+        };
+
+        ipcMain.on('request', onRequest);
 
         this.mainWindow.loadURL(mainURL);
     }
@@ -217,23 +240,41 @@ export default class Application {
         app.quitting = true
     }
 
-    private onCommand(sender, command: string, data?: any) {
+    private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
                 /* save config */
                 writeFileSync(MAIN_CONFIG, JSON.stringify(data), 'utf-8');
                 writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
 
+                let CHANNEL_STATUS = 'esminer:' + await this.getId(this.getUser().username) + ':status';
+                let CHANNEL_DATA = 'esminer:' + await this.getId(this.getUser().username) + ':data';
+
                 /* start claymore */
                 this.claymoreProcess = new Claymore(this);
-                this.claymoreProcess.on('start', () => sender.send('status', 'start'));
-                this.claymoreProcess.on('stop', () => sender.send('status', 'stop'));
-                this.claymoreProcess.on('data', data => sender.send('data', data));
+                this.claymoreProcess.on('start', () => {
+                    sender.send('status', 'running');
+                    Application.mqttClient.publish(CHANNEL_STATUS, 'running');
+                });
+
+                this.claymoreProcess.on('stop', () => {
+                    sender.send('status', 'stopped');
+                    Application.mqttClient.publish(CHANNEL_STATUS, 'stopped');
+                });
+
+                this.claymoreProcess.on('data', data => {
+                    sender.send('data', data);
+
+                    let msg = JSON.stringify({
+                        type: this.claymoreProcess.getType(),
+                        data: data
+                    });
+
+                    Application.mqttClient.publish(CHANNEL_DATA, msg);
+                });
 
                 let currentParams = this.readParams(MAIN_CONFIG);
-                this.claymoreProcess.initialize().then(() => {
-                    this.claymoreProcess.start(currentParams.params, currentParams.runMode);
-                });
+                this.claymoreProcess.start(currentParams.params, currentParams.runMode);
 
                 break;
             }

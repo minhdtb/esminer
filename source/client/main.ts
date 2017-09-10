@@ -81,13 +81,13 @@ const store = new Vuex.Store({
 });
 
 ipcRenderer.on('status', (event, data) => {
-    store.commit('SET_RUNNING', (data === 'start'));
+    store.commit('SET_RUNNING', (data === 'running'));
 
-    if (data === 'start') {
+    if (data === 'running') {
         store.commit('SET_STATUS', 'Initializing...')
     }
 
-    if (data === 'stop') {
+    if (data === 'stopped') {
         store.commit('SET_STATUS', 'Stopped.')
     }
 });
