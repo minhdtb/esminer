@@ -146,8 +146,8 @@ export default class Application {
                 this.mainWindow.hide()
             }
         });
-
-        let onFinishLoad = async () => {
+        
+        this.mainWindow.webContents.on('did-finish-load', async () => {
             let CHANNEL_COMMAND = 'esminer:' + await this.getId(this.getUser().username) + ':command';
 
             if (existsSync(RUN_CONFIG)) {
@@ -170,9 +170,7 @@ export default class Application {
             });
 
             Application.mqttClient.subscribe(CHANNEL_COMMAND);
-        };
-
-        this.mainWindow.webContents.on('did-finish-load', () => onFinishLoad());
+        });
 
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
         const contextMenu = Menu.buildFromTemplate([
@@ -194,7 +192,7 @@ export default class Application {
             },
             {
                 label: 'Quit',
-                click: function () {
+                click: () => {
                     dialog.showMessageBox({
                         type: 'question',
                         buttons: ['Yes', 'No'],
@@ -215,11 +213,9 @@ export default class Application {
             this.mainWindow.show();
         });
 
-        let onRequest = async (event, response) => {
+        ipcMain.on('request', async (event, response) => {
             await this.onCommand(event.sender, response.command, response.data ? response.data : null)
-        };
-
-        ipcMain.on('request', onRequest);
+        });
 
         this.mainWindow.loadURL(mainURL);
     }

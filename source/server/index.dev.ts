@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'development';
 
-require('electron-debug')({showDevTools: true});
+require('electron-debug')({showDevTools: false});
 
 require('electron').app.on('ready', () => {
     let installExtension = require('electron-devtools-installer');
