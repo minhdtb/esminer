@@ -146,7 +146,7 @@ export default class Application {
                 this.mainWindow.hide()
             }
         });
-        
+
         this.mainWindow.webContents.on('did-finish-load', async () => {
             let CHANNEL_COMMAND = 'esminer:' + await this.getId(this.getUser().username) + ':command';
 
@@ -169,7 +169,7 @@ export default class Application {
                 }
             });
 
-            Application.mqttClient.subscribe(CHANNEL_COMMAND);
+            Application.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
         });
 
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
@@ -250,23 +250,25 @@ export default class Application {
                 this.claymoreProcess = new Claymore(this);
                 this.claymoreProcess.on('start', () => {
                     sender.send('status', 'running');
-                    Application.mqttClient.publish(CHANNEL_STATUS, 'running');
+                    Application.mqttClient.publish(CHANNEL_STATUS, 'running', {qos: 2});
                 });
 
                 this.claymoreProcess.on('stop', () => {
                     sender.send('status', 'stopped');
-                    Application.mqttClient.publish(CHANNEL_STATUS, 'stopped');
+                    Application.mqttClient.publish(CHANNEL_STATUS, 'stopped', {qos: 2});
                 });
 
                 this.claymoreProcess.on('data', data => {
                     sender.send('data', data);
 
-                    let msg = JSON.stringify({
-                        type: this.claymoreProcess.getType(),
-                        data: data
-                    });
+                    if (this.claymoreProcess) {
+                        let msg = JSON.stringify({
+                            type: this.claymoreProcess.getType(),
+                            data: data
+                        });
 
-                    Application.mqttClient.publish(CHANNEL_DATA, msg);
+                        Application.mqttClient.publish(CHANNEL_DATA, msg);
+                    }
                 });
 
                 let currentParams = this.readParams(MAIN_CONFIG);
