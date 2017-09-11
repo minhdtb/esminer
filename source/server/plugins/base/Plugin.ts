@@ -41,7 +41,7 @@ export class Plugin extends EventEmitter implements IPlugin {
 
     start(params, mode) {
         if (!mode || mode === Plugin.EXEC_MODE) {
-            this._process = exec('start /i /wait ' + this._name + ' ' + params.join(' '), {
+            this._process = exec('start /wait ' + this._name + ' ' + params.join(' ') + ' >> a.txt 2>>&1', {
                 cwd: this._dir
             });
         } else if (mode === Plugin.SPAWN_MODE) {

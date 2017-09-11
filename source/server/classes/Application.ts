@@ -30,10 +30,7 @@ export default class Application {
     private appId: string;
     private user: any;
 
-    public static mqttClient: Client = connect(MQTT_URI, {
-        username: 'minhdtb',
-        password: '123456'
-    });
+    private mqttClient: Client;
 
     constructor() {
         autoUpdater.logger = log;
@@ -157,7 +154,7 @@ export default class Application {
                 }
             }
 
-            Application.mqttClient.on('message', (topic, message) => {
+            this.mqttClient.on('message', (topic, message) => {
                 if (topic === CHANNEL_COMMAND) {
                     if (message.toString() === 'start') {
                         this.mainWindow.webContents.send('process:force-start');
@@ -169,7 +166,7 @@ export default class Application {
                 }
             });
 
-            Application.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
+            this.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
         });
 
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
@@ -236,6 +233,16 @@ export default class Application {
         app.quitting = true
     }
 
+    private publish(channel: string, message: string, options?: any) {
+        if (this.mqttClient) {
+            if (options) {
+                this.mqttClient.publish(channel, message, options);
+            } else {
+                this.mqttClient.publish(channel, message);
+            }
+        }
+    }
+
     private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
@@ -250,12 +257,12 @@ export default class Application {
                 this.claymoreProcess = new Claymore(this);
                 this.claymoreProcess.on('start', () => {
                     sender.send('status', 'running');
-                    Application.mqttClient.publish(CHANNEL_STATUS, 'running', {qos: 2});
+                    this.publish(CHANNEL_STATUS, 'running', {qos: 2});
                 });
 
                 this.claymoreProcess.on('stop', () => {
                     sender.send('status', 'stopped');
-                    Application.mqttClient.publish(CHANNEL_STATUS, 'stopped', {qos: 2});
+                    this.publish(CHANNEL_STATUS, 'stopped', {qos: 2});
                 });
 
                 this.claymoreProcess.on('data', data => {
@@ -267,7 +274,7 @@ export default class Application {
                             data: data
                         });
 
-                        Application.mqttClient.publish(CHANNEL_DATA, msg);
+                        this.publish(CHANNEL_DATA, msg);
                     }
                 });
 
@@ -287,6 +294,26 @@ export default class Application {
             }
             case 'set:user': {
                 this.user = data;
+                let id = await this.getId(this.user.username);
+                const CHANNEL_ONLINE = 'online/' + id;
+
+                this.mqttClient = connect(MQTT_URI, {
+                    clientId: id,
+                    username: 'minhdtb',
+                    password: '123456',
+                    will: {
+                        topic: 'online/' + id,
+                        payload: 'offline',
+                        qos: 2,
+                        retain: true
+                    }
+                });
+
+                this.publish(CHANNEL_ONLINE, 'online', {
+                    qos: 2,
+                    retain: true
+                });
+
                 break;
             }
             case 'get:configuration': {

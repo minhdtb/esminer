@@ -64,7 +64,7 @@ export class Claymore extends Plugin {
             return;
 
         let dataInfo = null;
-
+        
         try {
             let info0 = input.result[2].split(';');
 
