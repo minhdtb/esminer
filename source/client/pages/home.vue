@@ -70,18 +70,8 @@
             }
         },
         mounted() {
-            ipcRenderer.send('request', {
-                command: 'set:user',
-                data: this.$store.state.authUser
-            });
-
-            ipcRenderer.on('process:force-start', () => {
-                this.start();
-            });
-
-            ipcRenderer.on('process:force-stop', () => {
-                this.stop();
-            });
+            ipcRenderer.on('process:force-start', () => this.start());
+            ipcRenderer.on('process:force-stop', () => this.stop());
         },
         methods: {
             start() {

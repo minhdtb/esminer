@@ -66,6 +66,11 @@
                 }
             }
         },
+        computed: {
+            user() {
+                return this.$store.state.authUser;
+            }
+        },
         methods: {
             submit() {
                 this.errors = [];
@@ -75,21 +80,21 @@
                         this.$store.dispatch('LOGIN', {
                             username: this.username,
                             password: this.password
-                        }).then(response => {
-                            let data = response.data;
-                            if (data.ok) {
-                                remote.getCurrentWindow().application.getId(data.user.username).then(id => {
-                                    this.$store.dispatch('REGISTER_UNIT', {
-                                        unitId: id,
-                                        userId: data.user._id
-                                    }).then(() => {
-                                        localStorage.setItem('authUser', JSON.stringify(data.user));
-                                        this.$store.commit('SET_AUTH', data.user);
-                                        this.$router.push('/');
-                                        this.loading = false;
-                                    })
+                        }).then(() => {
+                            require('getmac').getMac((error, macAddress) => {
+                                if (error)
+                                    return;
+
+                                let id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
+                                this.$store.dispatch('REGISTER_UNIT', {
+                                    unitId: id,
+                                    userId: this.user._id
+                                }).then(() => {
+                                    this.$store.commit('SET_APPID', id);
                                 });
-                            }
+                            });
+
+                            this.$router.push('/');
                         }).catch(e => {
                             this.loading = false;
                             if (e.response) {

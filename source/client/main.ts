@@ -30,6 +30,7 @@ const store = new Vuex.Store({
         authUser: null,
         running: false,
         status: null,
+        appId: null,
         data: {},
         config: {
             epool: null,
@@ -46,13 +47,22 @@ const store = new Vuex.Store({
         }
     },
     actions: {
-        LOGIN(state, credentials) {
-            return axios.post(`${API_URL}/login`, credentials);
+        LOGIN({commit}, credentials) {
+            return axios.post(`${API_URL}/login`, credentials)
+                .then((response) => {
+                    let data = response.data;
+                    localStorage.setItem('authUser', JSON.stringify(data.user));
+                    commit('SET_AUTH', data.user);
+                });
         },
-        REGISTER(state, credentials) {
+        LOGOUT({commit}) {
+            localStorage.removeItem('authUser');
+            commit('SET_AUTH', null);
+        },
+        REGISTER({commit}, credentials) {
             return axios.post(`${API_URL}/register`, credentials);
         },
-        REGISTER_UNIT(state, credentials) {
+        REGISTER_UNIT({commit}, credentials) {
             return axios.post(`${API_URL}/unit/register`, credentials);
         }
     },
@@ -71,6 +81,9 @@ const store = new Vuex.Store({
         },
         SET_STATUS(state, status) {
             state.status = status;
+        },
+        SET_APPID(state, id) {
+            state.appId = id;
         }
     },
     getters: {

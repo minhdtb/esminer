@@ -2,7 +2,6 @@ import {EventEmitter} from 'events'
 import {ChildProcess, exec, spawn} from "child_process";
 import {IPlugin} from "./IPlugin";
 import * as path from 'path';
-import Application from "../../classes/Application";
 
 const runas = require('runas');
 const isDev = require('electron-is-dev');
@@ -24,15 +23,13 @@ export class Plugin extends EventEmitter implements IPlugin {
     private _dir: string;
     private _name: string;
     private _processType: ProcessType;
-    private _app: Application;
 
-    constructor(app: Application, dir, name, type: ProcessType) {
+    constructor(dir: string, name: string, type: ProcessType) {
         super();
         this._process = null;
         this._dir = dir;
         this._name = name;
         this._processType = type;
-        this._app = app;
     }
 
     getType(): ProcessType {

@@ -13,7 +13,7 @@
     </v-app>
 </template>
 <script>
-    import {remote} from 'electron';
+    import {remote, ipcRenderer} from 'electron';
 
     export default {
         computed: {
@@ -23,10 +23,7 @@
         },
         methods: {
             logout() {
-                localStorage.removeItem('authUser');
-                this.$store.commit('SET_AUTH', null);
-                this.$router.push('/login');
-
+                this.$store.dispatch('LOGOUT').then(() => this.$router.push('/login'));
             },
             close() {
                 let window = remote.getCurrentWindow();
