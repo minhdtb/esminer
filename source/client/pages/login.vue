@@ -90,11 +90,9 @@
                                     unitId: id,
                                     userId: this.user._id
                                 }).then(() => {
-                                    this.$store.commit('SET_APPID', id);
+                                    this.$router.push('/');
                                 });
                             });
-
-                            this.$router.push('/');
                         }).catch(e => {
                             this.loading = false;
                             if (e.response) {

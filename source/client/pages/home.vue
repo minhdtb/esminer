@@ -46,8 +46,12 @@
 </template>
 <script>
     import {ipcRenderer, remote} from 'electron'
+    import * as crypto from 'crypto';
     import dashboard from '../components/dashboard.vue'
     import configuration from '../components/configuration.vue'
+    import {Client, connect} from 'mqtt'
+
+    const MQTT_URI = 'wss://mqtt.esminer.com:8083';
 
     export default {
         components: {
@@ -67,11 +71,43 @@
                     this.active = 'dashboard';
 
                 return this.$store.state.running;
+            },
+            user() {
+                return this.$store.state.authUser;
             }
         },
         mounted() {
             ipcRenderer.on('process:force-start', () => this.start());
             ipcRenderer.on('process:force-stop', () => this.stop());
+
+            require('getmac').getMac((error, macAddress) => {
+                if (error)
+                    return;
+
+                let id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
+                let channel_status = 'esminer:' + id + ':status';
+
+                const client = connect(MQTT_URI, {
+                    clientId: id,
+                    username: 'minhdtb',
+                    password: '123456',
+                    clean: false,
+                    will: {
+                        topic: 'online/' + id,
+                        payload: 'offline',
+                        qos: 2,
+                        retain: true
+                    }
+                });
+
+                client.on('connect', () => {
+                    console.log('Message client is connected.')
+                });
+
+                this.$store.watch((state) => state.status,
+                    () => {
+                    });
+            });
         },
         methods: {
             start() {

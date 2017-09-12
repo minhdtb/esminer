@@ -30,7 +30,6 @@ const store = new Vuex.Store({
         authUser: null,
         running: false,
         status: null,
-        appId: null,
         data: {},
         config: {
             epool: null,
@@ -81,9 +80,6 @@ const store = new Vuex.Store({
         },
         SET_STATUS(state, status) {
             state.status = status;
-        },
-        SET_APPID(state, id) {
-            state.appId = id;
         }
     },
     getters: {
