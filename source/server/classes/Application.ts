@@ -145,28 +145,12 @@ export default class Application {
         });
 
         this.mainWindow.webContents.on('did-finish-load', async () => {
-            let CHANNEL_COMMAND = 'esminer:' + await this.getId(this.getUser().username) + ':command';
-
             if (existsSync(RUN_CONFIG)) {
                 const runConfig = JSON.parse(readFileSync(RUN_CONFIG, 'utf8').toString());
                 if (runConfig.run) {
                     this.mainWindow.webContents.send('process:force-start');
                 }
             }
-
-            this.mqttClient.on('message', (topic, message) => {
-                if (topic === CHANNEL_COMMAND) {
-                    if (message.toString() === 'start') {
-                        this.mainWindow.webContents.send('process:force-start');
-                    }
-
-                    if (message.toString() === 'stop') {
-                        this.mainWindow.webContents.send('process:force-stop');
-                    }
-                }
-            });
-
-            this.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
         });
 
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
@@ -243,6 +227,36 @@ export default class Application {
         }
     }
 
+    private initMessageQueue(id: string) {
+        const CHANNEL_COMMAND = 'esminer:' + id + ':command';
+
+        this.mqttClient = connect(MQTT_URI, {
+            clientId: id,
+            username: 'minhdtb',
+            password: '123456',
+            will: {
+                topic: 'online/' + id,
+                payload: 'offline',
+                qos: 2,
+                retain: true
+            }
+        });
+
+        this.mqttClient.on('message', (topic, message) => {
+            if (topic === CHANNEL_COMMAND) {
+                if (message.toString() === 'start') {
+                    this.mainWindow.webContents.send('process:force-start');
+                }
+
+                if (message.toString() === 'stop') {
+                    this.mainWindow.webContents.send('process:force-stop');
+                }
+            }
+        });
+
+        this.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
+    }
+
     private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
@@ -295,20 +309,10 @@ export default class Application {
             case 'set:user': {
                 this.user = data;
                 let id = await this.getId(this.user.username);
+
+                this.initMessageQueue(id);
+
                 const CHANNEL_ONLINE = 'online/' + id;
-
-                this.mqttClient = connect(MQTT_URI, {
-                    clientId: id,
-                    username: 'minhdtb',
-                    password: '123456',
-                    will: {
-                        topic: 'online/' + id,
-                        payload: 'offline',
-                        qos: 2,
-                        retain: true
-                    }
-                });
-
                 this.publish(CHANNEL_ONLINE, 'online', {
                     qos: 2,
                     retain: true
