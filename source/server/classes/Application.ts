@@ -234,6 +234,7 @@ export default class Application {
             clientId: id,
             username: 'minhdtb',
             password: '123456',
+            clean: false,
             will: {
                 topic: 'online/' + id,
                 payload: 'offline',
@@ -242,19 +243,30 @@ export default class Application {
             }
         });
 
+        this.mqttClient.on('connect', () => {
+            const CHANNEL_ONLINE = 'online/' + id;
+
+            this.publish(CHANNEL_ONLINE, 'online', {
+                qos: 2,
+                retain: true
+            });
+
+            this.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
+        });
+
         this.mqttClient.on('message', (topic, message) => {
             if (topic === CHANNEL_COMMAND) {
-                if (message.toString() === 'start') {
+                let cmd = message.toString();
+
+                if (cmd === 'start') {
                     this.mainWindow.webContents.send('process:force-start');
                 }
 
-                if (message.toString() === 'stop') {
+                if (cmd === 'stop') {
                     this.mainWindow.webContents.send('process:force-stop');
                 }
             }
         });
-
-        this.mqttClient.subscribe(CHANNEL_COMMAND, {qos: 2});
     }
 
     private async onCommand(sender, command: string, data?: any) {
@@ -308,15 +320,7 @@ export default class Application {
             }
             case 'set:user': {
                 this.user = data;
-                let id = await this.getId(this.user.username);
-
-                this.initMessageQueue(id);
-
-                const CHANNEL_ONLINE = 'online/' + id;
-                this.publish(CHANNEL_ONLINE, 'online', {
-                    qos: 2,
-                    retain: true
-                });
+                this.initMessageQueue(await this.getId(this.user.username));
 
                 break;
             }
