@@ -87,9 +87,9 @@ export default class Application {
         };
     }
 
-    private async onReady() {
+    private onReady() {
         if (!isDev) {
-            await autoUpdater.checkForUpdates();
+            autoUpdater.checkForUpdates().then();
 
             app.setLoginItemSettings({
                 openAtLogin: true,
