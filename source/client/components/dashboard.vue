@@ -106,6 +106,7 @@
 <script>
     import _ from 'lodash'
     import moment from 'moment'
+    import {status} from '../main'
 
     const HASHRATE_TOTAL = 200;
     const TEMP_TOTAL = 50;
@@ -144,7 +145,16 @@
         },
         computed: {
             status() {
-                return this.$store.state.status;
+                switch (this.$store.state.status) {
+                    case status.STATUS_STOPPED:
+                        return 'Stopped.';
+                    case status.STATUS_INITIALIZING:
+                        return 'Initializing...';
+                    case status.STATUS_RUNNING:
+                        return 'Running.';
+                    default:
+                        return 'Unknown.'
+                }
             }
         },
         mounted() {
@@ -166,14 +176,6 @@
                 this.pools = data.pools;
                 this.version = data.version;
                 this.runningTime = moment.duration(data.runningTime, 'minutes').humanize();
-
-                if (!this.$store.state.running) {
-                    this.$store.commit('SET_RUNNING', true)
-                }
-
-                if (this.$store.state.status !== 'Running.') {
-                    this.$store.commit('SET_STATUS', 'Running.')
-                }
 
                 updatePlot(data.totalHashRate / 1000, this.gpuList);
             });

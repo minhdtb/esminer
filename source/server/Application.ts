@@ -202,21 +202,11 @@ export default class Application {
 
                 /* start claymore */
                 this.minerProcess = new Claymore();
-
-                this.minerProcess.on('start', () => {
-                    sender.send('status', 'running');
-                });
-
-                this.minerProcess.on('stop', () => {
-                    sender.send('status', 'stopped');
-                });
-
-                this.minerProcess.on('data', data => {
-                    sender.send('data', data);
-                });
+                this.minerProcess.on('start', () => sender.send('status', 'start'));
+                this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                this.minerProcess.on('data', data => sender.send('data', data));
 
                 let currentParams = this.readParams(MAIN_CONFIG);
-
                 this.minerProcess.start(currentParams.params, currentParams.runMode);
 
                 break;
@@ -225,9 +215,9 @@ export default class Application {
                 if (this.minerProcess) {
                     this.minerProcess.stop();
                     this.minerProcess = null;
+                    writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
                 }
 
-                writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
                 break;
             }
             case 'get:configuration': {

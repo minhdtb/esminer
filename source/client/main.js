@@ -15,6 +15,12 @@ Vue.use(VueRouter);
 Vue.use(Vuetify);
 Vue.use(Vuex);
 
+export const status = {
+    STATUS_STOPPED: 0,
+    STATUS_INITIALIZING: 1,
+    STATUS_RUNNING: 2
+};
+
 const routes = [
     {path: '/login', component: Login},
     {path: '/register', component: Register},
@@ -28,8 +34,7 @@ const API_URL = 'http://localhost:3000/api';
 const store = new Vuex.Store({
     state: {
         authUser: null,
-        running: false,
-        status: null,
+        status: status.STATUS_STOPPED,
         data: {},
         config: {
             epool: null,
@@ -69,9 +74,6 @@ const store = new Vuex.Store({
         SET_AUTH(state, user) {
             state.authUser = user;
         },
-        SET_RUNNING(state, value) {
-            state.running = value;
-        },
         SET_CONFIG(state, config) {
             state.config = config;
         },
@@ -90,19 +92,18 @@ const store = new Vuex.Store({
 });
 
 ipcRenderer.on('status', (event, data) => {
-    store.commit('SET_RUNNING', (data === 'running'));
-
-    if (data === 'running') {
-        store.commit('SET_STATUS', 'Initializing...')
+    if (data === 'start') {
+        store.commit('SET_STATUS', status.STATUS_INITIALIZING)
     }
 
-    if (data === 'stopped') {
-        store.commit('SET_STATUS', 'Stopped.')
+    if (data === 'stop') {
+        store.commit('SET_STATUS', status.STATUS_STOPPED)
     }
 });
 
 ipcRenderer.on('data', (event, data) => {
     store.commit('SET_DATA', data);
+    store.commit('SET_STATUS', status.STATUS_RUNNING);
 });
 
 ipcRenderer.on('response', (event, data) => {

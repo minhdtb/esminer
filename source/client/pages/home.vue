@@ -32,11 +32,11 @@
                 <div style="margin-left: 3px">v{{version}}</div>
             </v-flex>
             <v-flex sm4 style="text-align: center">
-                <v-btn v-if="!isRunning" primary style="width: 250px" @click="start()">
+                <v-btn v-if="!isRunning" primary style="width: 250px" @click.stop="start">
                     <v-icon>fa-play-circle fa-lg fa-fw</v-icon>
                     START MINING
                 </v-btn>
-                <v-btn v-if="isRunning" error style="width: 250px" @click="stop()">
+                <v-btn v-if="isRunning" error style="width: 250px" @click.stop="stop">
                     <v-icon>fa-stop-circle fa-lg fa-fw</v-icon>
                     STOP MINING
                 </v-btn>
@@ -50,6 +50,7 @@
     import dashboard from '../components/dashboard.vue'
     import configuration from '../components/configuration.vue'
     import {Client, connect} from 'mqtt'
+    import {status} from '../main'
 
     const MQTT_URI = 'wss://mqtt.esminer.com:8083';
 
@@ -67,10 +68,10 @@
         },
         computed: {
             isRunning() {
-                if (this.$store.state.running)
+                if (this.$store.state.status === status.STATUS_RUNNING)
                     this.active = 'dashboard';
 
-                return this.$store.state.running;
+                return this.$store.state.status !== status.STATUS_STOPPED;
             },
             user() {
                 return this.$store.state.authUser;
@@ -85,41 +86,75 @@
                     return;
 
                 let id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
-                let channel_status = 'esminer:' + id + ':status';
 
-                const client = connect(MQTT_URI, {
+                this.channel_status = 'esminer:' + id + ':status';
+                this.channel_data = 'esminer:' + id + ':data';
+                this.channel_online = 'esminer:' + id + ':online';
+                this.channel_command = 'esminer:' + id + ':command';
+
+                this.client = connect(MQTT_URI, {
                     clientId: id,
                     username: 'minhdtb',
                     password: '123456',
                     clean: false,
                     will: {
-                        topic: 'online/' + id,
+                        topic: this.channel_online,
                         payload: 'offline',
                         qos: 2,
                         retain: true
                     }
                 });
 
-                client.on('connect', () => {
-                    console.log('Message client is connected.')
+                this.client.on('connect', () => {
+                    console.log('Message client is connected.');
+                    this.client.publish(this.channel_online, 'online', {qos: 2, retain: true});
                 });
 
+                this.client.on('message', (topic, message) => {
+                    let command = message.toString();
+                    switch (command) {
+                        case 'start':
+                            this.start();
+                            break;
+                        case 'stop':
+                            this.stop();
+                            break;
+                    }
+                });
+
+                this.client.subscribe(this.channel_command);
+
                 this.$store.watch((state) => state.status,
-                    () => {
+                    (is) => {
+                        switch (is) {
+                            case status.STATUS_STOPPED:
+                                this.client.publish(this.channel_status, status.STATUS_STOPPED.toString(), {qos: 2});
+                                break;
+                            case status.STATUS_INITIALIZING:
+                                this.client.publish(this.channel_status, status.STATUS_INITIALIZING.toString(), {qos: 2});
+                                break;
+                            case status.STATUS_RUNNING:
+                                this.client.publish(this.channel_status, status.STATUS_RUNNING.toString(), {qos: 2});
+                                break;
+                            default:
+                                break
+                        }
                     });
+
+                this.$store.watch((state) => state.data, (data) => this.client.publish(this.channel_data, JSON.stringify(data)));
             });
+        },
+        destroyed() {
+            this.client.publish(this.channel_online, 'offline', {qos: 2, retain: true});
+            this.client.end();
+            this.client = null;
         },
         methods: {
             start() {
-                ipcRenderer.send('request', {
-                    command: 'start',
-                    data: this.$store.state.config
-                });
+                ipcRenderer.send('request', {command: 'start', data: this.$store.state.config});
             },
             stop() {
-                ipcRenderer.send('request', {
-                    command: 'stop'
-                });
+                ipcRenderer.send('request', {command: 'stop'});
             }
         }
     }
