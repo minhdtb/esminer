@@ -50,7 +50,7 @@
     import dashboard from '../components/dashboard.vue'
     import configuration from '../components/configuration.vue'
     import {Client, connect} from 'mqtt'
-    import {status} from '../main'
+    import {status, getSettings, setSettings} from '../main'
 
     const MQTT_URI = 'wss://mqtt.esminer.com:8083';
 
@@ -68,16 +68,19 @@
         },
         computed: {
             isRunning() {
-                if (this.$store.state.status === status.STATUS_RUNNING)
+                let isRun = this.$store.state.status !== status.STATUS_STOPPED;
+                if (isRun)
                     this.active = 'dashboard';
 
-                return this.$store.state.status !== status.STATUS_STOPPED;
+                return isRun;
             },
             user() {
                 return this.$store.state.authUser;
             }
         },
         mounted() {
+            getSettings();
+
             ipcRenderer.on('process:force-start', () => this.start());
             ipcRenderer.on('process:force-stop', () => this.stop());
 
@@ -126,6 +129,13 @@
 
                 this.$store.watch((state) => state.status,
                     (is) => {
+                        if (this.isRunning)
+                            this.$store.commit('SET_CONFIG_RUNNING', true);
+                        else
+                            this.$store.commit('SET_CONFIG_RUNNING', false);
+
+                        setSettings();
+
                         switch (is) {
                             case status.STATUS_STOPPED:
                                 this.client.publish(this.channel_status, status.STATUS_STOPPED.toString(), {qos: 2});

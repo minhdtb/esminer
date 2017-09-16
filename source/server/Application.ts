@@ -1,5 +1,4 @@
 import {app, BrowserWindow, dialog, ipcMain, Menu, Tray} from 'electron'
-import {existsSync, readFileSync, writeFileSync} from 'fs'
 import {Claymore} from "./plugins/Claymore"
 import {Gpuz} from "./plugins/Gpuz"
 import {Plugin} from "./plugins/base/Plugin"
@@ -11,8 +10,6 @@ import {autoUpdater} from 'electron-updater'
 
 const isDev = require('electron-is-dev');
 
-const MAIN_CONFIG = app.getPath('userData') + '/config_main.json';
-const RUN_CONFIG = app.getPath('userData') + '/config_run.json';
 const WINDOW_WIDTH = 1000;
 const WINDOW_HEIGHT = 725;
 
@@ -63,11 +60,9 @@ export default class Application {
         app.on('before-quit', () => this.onBeforeQuit());
     }
 
-    private readParams(filename: string) {
-        let config = JSON.parse(readFileSync(filename, 'utf8').toString());
-
-        let r = _.filter(_.map(_.keys(_.omit(config, ['runMode'])), (key) => {
-            let value = config[key];
+    private getParams(params) {
+        let r = _.filter(_.map(_.keys(params), (key) => {
+            let value = params[key];
             if (!value && key === 'epool') {
                 value = DEFAULT_POOL
             }
@@ -81,10 +76,7 @@ export default class Application {
             return !!items[1]
         });
 
-        return {
-            params: _.flatten(r),
-            runMode: config.runMode
-        };
+        return _.flatten(r)
     }
 
     private onReady() {
@@ -129,23 +121,12 @@ export default class Application {
             }
         });
 
-        this.mainWindow.webContents.on('did-finish-load', async () => {
-            if (existsSync(RUN_CONFIG)) {
-                const runConfig = JSON.parse(readFileSync(RUN_CONFIG, 'utf8').toString());
-                if (runConfig.run) {
-                    this.mainWindow.webContents.send('process:force-start');
-                }
-            }
-        });
-
         this.tray = new Tray(join(process.env.APP_PATH, 'static/images/logo.ico'));
 
         const contextMenu = Menu.buildFromTemplate([
             {
                 label: 'Show',
-                click: () => {
-                    this.mainWindow.show();
-                }
+                click: () => this.mainWindow.show()
             },
             {
                 label: 'Run GPU-Z',
@@ -193,21 +174,15 @@ export default class Application {
         app.quitting = true
     }
 
-    private async onCommand(sender, command: string, data?: any) {
+    private async onCommand(sender, command: string, config?: any) {
         switch (command) {
             case 'start': {
-                /* save config */
-                writeFileSync(MAIN_CONFIG, JSON.stringify(data), 'utf-8');
-                writeFileSync(RUN_CONFIG, JSON.stringify({run: true}), 'utf-8');
-
-                /* start claymore */
                 this.minerProcess = new Claymore();
                 this.minerProcess.on('start', () => sender.send('status', 'start'));
                 this.minerProcess.on('stop', () => sender.send('status', 'stop'));
                 this.minerProcess.on('data', data => sender.send('data', data));
 
-                let currentParams = this.readParams(MAIN_CONFIG);
-                this.minerProcess.start(currentParams.params, currentParams.runMode);
+                this.minerProcess.start(this.getParams(config.params), config.general.runMode);
 
                 break;
             }
@@ -215,16 +190,8 @@ export default class Application {
                 if (this.minerProcess) {
                     this.minerProcess.stop();
                     this.minerProcess = null;
-                    writeFileSync(RUN_CONFIG, JSON.stringify({run: false}), 'utf-8');
                 }
 
-                break;
-            }
-            case 'get:configuration': {
-                if (existsSync(MAIN_CONFIG)) {
-                    let configs = JSON.parse(readFileSync(MAIN_CONFIG, 'utf8').toString());
-                    sender.send('response', {command: 'get:configuration', data: configs})
-                }
                 break;
             }
         }
