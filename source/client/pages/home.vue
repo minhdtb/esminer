@@ -52,6 +52,8 @@
     import {Client, connect} from 'mqtt'
     import {status, getSettings, setSettings} from '../main'
 
+    import * as net from 'net'
+
     const MQTT_URI = 'wss://mqtt.esminer.com:8083';
 
     export default {
@@ -94,6 +96,7 @@
                 this.channel_data = 'esminer:' + id + ':data';
                 this.channel_online = 'esminer:' + id + ':online';
                 this.channel_command = 'esminer:' + id + ':command';
+                this.channel_console = 'esminer:' + id + ':console';
 
                 this.client = connect(MQTT_URI, {
                     clientId: id,
@@ -107,6 +110,12 @@
                         retain: true
                     }
                 });
+
+                net.createServer(socket => {
+                    socket.on('data', data => this.client.publish(this.channel_console, data));
+                    socket.on("error", () => {
+                    });
+                }).listen(4444);
 
                 this.client.on('connect', () => {
                     console.log('Message client is connected.');
