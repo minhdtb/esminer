@@ -24,11 +24,13 @@
     "files": [
       "dist/**/*",
       "!dist/claymore/**/*",
-      "!dist/gpuz/**/*"
+      "!dist/gpuz/**/*",
+      "!dist/loader/**/*"
     ],
     "extraResources": [
       "dist/claymore",
       "dist/gpuz",
+      "dist/loader",
       "static/images"
     ],
     "dmg": {

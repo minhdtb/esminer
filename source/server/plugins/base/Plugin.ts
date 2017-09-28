@@ -37,18 +37,18 @@ export class Plugin extends EventEmitter implements IPlugin {
     }
 
     start(params, mode) {
-        let loaderDir = path.resolve(__dirname, `${BASE_PATH}/../loader`);
+        let loaderDir = path.resolve(__dirname, isDev ? `${BASE_PATH}../dist/loader` : `${BASE_PATH}dist/loader`);
         let loader = 'loader.exe';
         let miner = this._dir + '/' + this._name;
-        
-        params = [miner].concat(params);
 
         if (!mode || mode === Plugin.EXEC_MODE) {
-            this._process = exec('start /wait ' + loader + ' ' + params.join(' '), {
+            let p = [miner].concat(params);
+            this._process = exec('start /wait ' + loader + ' ' + p.join(' '), {
                 cwd: loaderDir
             });
         } else if (mode === Plugin.SPAWN_MODE) {
-            this._process = spawn(loader, params, {
+            let p = [miner].concat(params);
+            this._process = spawn(loader, p, {
                 cwd: loaderDir
             });
         } else if (mode === Plugin.RUNAS_MODE) {
