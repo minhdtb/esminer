@@ -63,7 +63,8 @@ if (process.env.NODE_ENV === 'production') {
     mainConfig.plugins.push(
         new CopyWebpackPlugin([
             {from: './claymore', to: 'claymore'},
-            {from: './gpuz', to: 'gpuz'}
+            {from: './gpuz', to: 'gpuz'},
+            {from: './loader', to: 'loader'}
         ], {
             ignore: ['*.txt']
         }),
