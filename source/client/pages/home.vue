@@ -112,7 +112,16 @@
                 });
 
                 net.createServer(socket => {
-                    socket.on('data', data => this.client.publish(this.channel_console, data));
+                    socket.on('data', data => {
+                        try {
+                            this.client.publish(this.channel_console, data);
+                            this.client.publish('console', JSON.stringify({
+                                id: id,
+                                content: JSON.parse(data)
+                            }));
+                        } catch (e) {
+                        }
+                    });
                     socket.on("error", () => {
                     });
                 }).listen(4444);
