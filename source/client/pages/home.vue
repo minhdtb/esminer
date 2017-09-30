@@ -92,9 +92,10 @@
 
                 let id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
 
+                this.id = id;
+
                 this.channel_status = 'esminer:' + id + ':status';
                 this.channel_data = 'esminer:' + id + ':data';
-                this.channel_online = 'esminer:' + id + ':online';
                 this.channel_command = 'esminer:' + id + ':command';
                 this.channel_console = 'esminer:' + id + ':console';
 
@@ -104,10 +105,11 @@
                     password: '123456',
                     clean: false,
                     will: {
-                        topic: this.channel_online,
-                        payload: 'offline',
-                        qos: 2,
-                        retain: true
+                        topic: 'online',
+                        payload: JSON.stringify({
+                            id: this.id,
+                            content: 'offline'
+                        })
                     }
                 });
 
@@ -128,7 +130,10 @@
 
                 this.client.on('connect', () => {
                     console.log('Message client is connected.');
-                    this.client.publish(this.channel_online, 'online', {qos: 2, retain: true});
+                    this.client.publish('online', JSON.stringify({
+                        id: id,
+                        content: 'online'
+                    }));
                 });
 
                 this.client.on('message', (topic, message) => {
@@ -154,26 +159,22 @@
 
                         setSettings();
 
-                        switch (is) {
-                            case status.STATUS_STOPPED:
-                                this.client.publish(this.channel_status, status.STATUS_STOPPED.toString(), {qos: 2});
-                                break;
-                            case status.STATUS_INITIALIZING:
-                                this.client.publish(this.channel_status, status.STATUS_INITIALIZING.toString(), {qos: 2});
-                                break;
-                            case status.STATUS_RUNNING:
-                                this.client.publish(this.channel_status, status.STATUS_RUNNING.toString(), {qos: 2});
-                                break;
-                            default:
-                                break
-                        }
+                        this.client.publish(this.channel_status, is.toString(), {qos: 2});
+                        this.client.publish('status', JSON.stringify({
+                            id: id,
+                            content: is.toString()
+                        }));
                     });
 
                 this.$store.watch((state) => state.data, (data) => this.client.publish(this.channel_data, JSON.stringify(data)));
             });
         },
         destroyed() {
-            this.client.publish(this.channel_online, 'offline', {qos: 2, retain: true});
+            this.client.publish('online', JSON.stringify({
+                id: this.id,
+                content: 'offline'
+            }));
+
             this.client.end();
             this.client = null;
         },
