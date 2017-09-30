@@ -109,7 +109,8 @@
                         payload: JSON.stringify({
                             id: this.id,
                             content: 'offline'
-                        })
+                        }),
+                        qos: 2
                     }
                 });
 
@@ -130,10 +131,7 @@
 
                 this.client.on('connect', () => {
                     console.log('Message client is connected.');
-                    this.client.publish('online', JSON.stringify({
-                        id: id,
-                        content: 'online'
-                    }));
+                    this.client.publish('online', JSON.stringify({id: id, content: 'online'}), {qos: 2});
                 });
 
                 this.client.on('message', (topic, message) => {
@@ -160,20 +158,14 @@
                         setSettings();
 
                         this.client.publish(this.channel_status, is.toString(), {qos: 2});
-                        this.client.publish('status', JSON.stringify({
-                            id: id,
-                            content: is.toString()
-                        }));
+                        this.client.publish('status', JSON.stringify({id: id, content: is.toString()}), {qos: 2});
                     });
 
                 this.$store.watch((state) => state.data, (data) => this.client.publish(this.channel_data, JSON.stringify(data)));
             });
         },
         destroyed() {
-            this.client.publish('online', JSON.stringify({
-                id: this.id,
-                content: 'offline'
-            }));
+            this.client.publish('online', JSON.stringify({id: this.id, content: 'offline'}), {qos: 2});
 
             this.client.end();
             this.client = null;
