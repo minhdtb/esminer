@@ -31,7 +31,7 @@ const routes = [
 
 const router = new VueRouter({routes});
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://my.esminer.com/api';
 const MAIN_CONFIG = remote.app.getPath('userData') + '/config_main.json';
 
 const store = new Vuex.Store({
