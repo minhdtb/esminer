@@ -23,6 +23,11 @@ export const status = {
     STATUS_RUNNING: 2
 };
 
+export const startType = {
+    REMOTE_START: 0,
+    NORMAL_START: 1
+};
+
 const routes = [
     {path: '/login', component: Login},
     {path: '/register', component: Register},

@@ -50,7 +50,7 @@
     import dashboard from '../components/dashboard.vue'
     import configuration from '../components/configuration.vue'
     import {Client, connect} from 'mqtt'
-    import {status, getSettings, setSettings} from '../main'
+    import {status, startType, getSettings, setSettings} from '../main'
 
     import * as net from 'net'
 
@@ -135,10 +135,10 @@
                 });
 
                 this.client.on('message', (topic, message) => {
-                    let command = message.toString();
-                    switch (command) {
+                    let msg = JSON.parse(message.toString());
+                    switch (msg.command) {
                         case 'start':
-                            this.start();
+                            this.start(null, msg.config);
                             break;
                         case 'stop':
                             this.stop();
@@ -171,11 +171,19 @@
             this.client = null;
         },
         methods: {
-            start() {
-                ipcRenderer.send('request', {command: 'start', data: this.$store.state.config});
+            start(e, val) {
+                ipcRenderer.send('request', {
+                    command: 'start',
+                    data: {
+                        startType: val ? startType.REMOTE_START : startType.NORMAL_START,
+                        config: val ? val : this.$store.state.config
+                    }
+                });
             },
             stop() {
-                ipcRenderer.send('request', {command: 'stop'});
+                ipcRenderer.send('request', {
+                    command: 'stop'
+                });
             }
         }
     }

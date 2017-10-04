@@ -16,6 +16,11 @@ const WINDOW_HEIGHT = 725;
 const DEFAULT_POOL = 'eth-eu2.nanopool.org:9999';
 const DEFAULT_WALLET = '0x32590ccd73c9675a6fe1e8ce776efc2a287f5d12';
 
+const startType = {
+    REMOTE_START: 0,
+    NORMAL_START: 1
+};
+
 export default class Application {
 
     private mainWindow: Electron.BrowserWindow;
@@ -174,7 +179,7 @@ export default class Application {
         app.quitting = true
     }
 
-    private async onCommand(sender, command: string, config?: any) {
+    private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
                 this.minerProcess = new Claymore();
@@ -182,7 +187,11 @@ export default class Application {
                 this.minerProcess.on('stop', () => sender.send('status', 'stop'));
                 this.minerProcess.on('data', data => sender.send('data', data));
 
-                this.minerProcess.start(this.getParams(config.params), config.general.runMode);
+                if (data.startType === startType.NORMAL_START) {
+                    this.minerProcess.start(this.getParams(data.config.params), data.config.general.runMode);
+                } else {
+                    this.minerProcess.start(data.config.setting, 0);
+                }
 
                 break;
             }
