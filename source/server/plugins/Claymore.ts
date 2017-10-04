@@ -5,8 +5,8 @@ import * as _ from 'lodash';
 
 export class Claymore extends Plugin {
 
-    constructor() {
-        super(resolve(__dirname, `${BASE_PATH}dist/claymore`), 'EthDcrMiner64.exe', ProcessType.PROCESS_MINER_CLAYMORE);
+    constructor(dir, exe) {
+        super(resolve(__dirname, `${BASE_PATH}dist/claymore/${dir}`), exe, ProcessType.PROCESS_MINER_CLAYMORE);
 
         this.on('start', () => {
             this.connect('localhost', 3333, {

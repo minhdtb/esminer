@@ -1,5 +1,4 @@
 import {app, BrowserWindow, dialog, ipcMain, Menu, Tray} from 'electron'
-import {Claymore} from "./plugins/Claymore"
 import {Gpuz} from "./plugins/Gpuz"
 import {Plugin} from "./plugins/base/Plugin"
 import * as _ from 'lodash'
@@ -7,6 +6,9 @@ import * as log from 'electron-log'
 import {join} from 'path'
 
 import {autoUpdater} from 'electron-updater'
+import {ETHMiner} from "./plugins/miners/ETHMiner";
+import {XMRMiner} from "./plugins/miners/XMRMiner";
+import {ZECMiner} from "./plugins/miners/ZECMiner";
 
 const isDev = require('electron-is-dev');
 
@@ -182,15 +184,40 @@ export default class Application {
     private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
-                this.minerProcess = new Claymore();
-                this.minerProcess.on('start', () => sender.send('status', 'start'));
-                this.minerProcess.on('stop', () => sender.send('status', 'stop'));
-                this.minerProcess.on('data', data => sender.send('data', data));
 
                 if (data.startType === startType.NORMAL_START) {
+                    this.minerProcess = new ETHMiner();
+                    this.minerProcess.on('start', () => sender.send('status', 'start'));
+                    this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                    this.minerProcess.on('data', data => sender.send('data', data));
                     this.minerProcess.start(this.getParams(data.config.params), data.config.general.runMode);
                 } else {
-                    this.minerProcess.start(data.config.setting, 0);
+                    switch (data.unitType) {
+                        case 0: {
+                            this.minerProcess = new ETHMiner();
+                            this.minerProcess.on('start', () => sender.send('status', 'start'));
+                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('data', data => sender.send('data', data));
+                            this.minerProcess.start(data.config, 0);
+                            break;
+                        }
+                        case 1: {
+                            this.minerProcess = new XMRMiner();
+                            this.minerProcess.on('start', () => sender.send('status', 'start'));
+                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('data', data => sender.send('data', data));
+                            this.minerProcess.start(data.config, 0);
+                            break;
+                        }
+                        case 2: {
+                            this.minerProcess = new ZECMiner();
+                            this.minerProcess.on('start', () => sender.send('status', 'start'));
+                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('data', data => sender.send('data', data));
+                            this.minerProcess.start(data.config, 0);
+                            break;
+                        }
+                    }
                 }
 
                 break;

@@ -138,7 +138,7 @@
                     let msg = JSON.parse(message.toString());
                     switch (msg.command) {
                         case 'start':
-                            this.start(null, msg.config);
+                            this.start(null, msg.configuration);
                             break;
                         case 'stop':
                             this.stop();
@@ -171,14 +171,26 @@
             this.client = null;
         },
         methods: {
-            start(e, val) {
-                ipcRenderer.send('request', {
-                    command: 'start',
-                    data: {
-                        startType: val ? startType.REMOTE_START : startType.NORMAL_START,
-                        config: val ? val : this.$store.state.config
-                    }
-                });
+            start(event, value) {
+                if (value) {
+                    ipcRenderer.send('request', {
+                        command: 'start',
+                        data: {
+                            startType: startType.REMOTE_START,
+                            unitType: value.unitType,
+                            config: value.unitSetting
+                        }
+                    });
+                } else {
+                    ipcRenderer.send('request', {
+                        command: 'start',
+                        data: {
+                            startType: startType.NORMAL_START,
+                            unitType: 0,
+                            config: this.$store.state.config
+                        }
+                    });
+                }
             },
             stop() {
                 ipcRenderer.send('request', {
