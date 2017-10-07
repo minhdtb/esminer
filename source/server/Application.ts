@@ -190,7 +190,10 @@ export default class Application {
                 if (data.startType === startType.NORMAL_START) {
                     this.minerProcess = new ETHMiner();
                     this.minerProcess.on('start', () => sender.send('status', 'start'));
-                    this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                    this.minerProcess.on('stop', () => {
+                        sender.send('status', 'stop');
+                        this.minerProcess = null;
+                    });
                     this.minerProcess.on('data', data => sender.send('data', data));
                     this.minerProcess.start(this.getParams(data.config.params), data.config.general.runMode);
                 } else {
@@ -198,7 +201,10 @@ export default class Application {
                         case 0: {
                             this.minerProcess = new ETHMiner();
                             this.minerProcess.on('start', () => sender.send('status', 'start'));
-                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('stop', () => {
+                                sender.send('status', 'stop');
+                                this.minerProcess = null;
+                            });
                             this.minerProcess.on('data', data => sender.send('data', data));
                             this.minerProcess.start(data.config, 0);
                             break;
@@ -206,7 +212,10 @@ export default class Application {
                         case 1: {
                             this.minerProcess = new XMRMiner();
                             this.minerProcess.on('start', () => sender.send('status', 'start'));
-                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('stop', () => {
+                                sender.send('status', 'stop');
+                                this.minerProcess = null;
+                            });
                             this.minerProcess.on('data', data => sender.send('data', data));
                             this.minerProcess.start(data.config, 0);
                             break;
@@ -214,7 +223,10 @@ export default class Application {
                         case 2: {
                             this.minerProcess = new ZECMiner();
                             this.minerProcess.on('start', () => sender.send('status', 'start'));
-                            this.minerProcess.on('stop', () => sender.send('status', 'stop'));
+                            this.minerProcess.on('stop', () => {
+                                sender.send('status', 'stop');
+                                this.minerProcess = null;
+                            });
                             this.minerProcess.on('data', data => sender.send('data', data));
                             this.minerProcess.start(data.config, 0);
                             break;
