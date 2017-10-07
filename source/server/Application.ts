@@ -88,11 +88,11 @@ export default class Application {
 
     private onReady() {
         if (!isDev) {
-            autoUpdater.checkForUpdates().then();
-
-            app.setLoginItemSettings({
-                openAtLogin: true,
-                openAsHidden: true
+            autoUpdater.checkForUpdates().then(() => {
+                app.setLoginItemSettings({
+                    openAtLogin: true,
+                    openAsHidden: true
+                });
             });
         }
 
@@ -184,6 +184,8 @@ export default class Application {
     private async onCommand(sender, command: string, data?: any) {
         switch (command) {
             case 'start': {
+                if (this.minerProcess)
+                    return;
 
                 if (data.startType === startType.NORMAL_START) {
                     this.minerProcess = new ETHMiner();

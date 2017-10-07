@@ -90,17 +90,32 @@
                 if (error)
                     return;
 
-                let id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
+                this.id = crypto.createHash('md5').update(macAddress + this.user.username).digest("hex");
 
-                this.id = id;
+                this.channel_status = 'esminer:' + this.id + ':status';
+                this.channel_data = 'esminer:' + this.id + ':data';
+                this.channel_command = 'esminer:' + this.id + ':command';
+                this.channel_console = 'esminer:' + this.id + ':console';
 
-                this.channel_status = 'esminer:' + id + ':status';
-                this.channel_data = 'esminer:' + id + ':data';
-                this.channel_command = 'esminer:' + id + ':command';
-                this.channel_console = 'esminer:' + id + ':console';
+                this.server = net.createServer(socket => {
+                    socket.on('data', data => {
+                        try {
+                            this.client.publish(this.channel_console, data);
+                            this.client.publish('console', JSON.stringify({
+                                id: this.id,
+                                content: JSON.parse(data)
+                            }));
+                        } catch (e) {
+                        }
+                    });
+
+                    socket.on("error", e => {
+                        console.log(e);
+                    });
+                }).listen(4444);
 
                 this.client = connect(MQTT_URI, {
-                    clientId: id,
+                    clientId: this.id,
                     username: 'minhdtb',
                     password: '123456',
                     clean: false,
@@ -114,24 +129,9 @@
                     }
                 });
 
-                net.createServer(socket => {
-                    socket.on('data', data => {
-                        try {
-                            this.client.publish(this.channel_console, data);
-                            this.client.publish('console', JSON.stringify({
-                                id: id,
-                                content: JSON.parse(data)
-                            }));
-                        } catch (e) {
-                        }
-                    });
-                    socket.on("error", () => {
-                    });
-                }).listen(4444);
-
                 this.client.on('connect', () => {
                     console.log('Message client is connected.');
-                    this.client.publish('online', JSON.stringify({id: id, content: 'online'}), {qos: 2});
+                    this.client.publish('online', JSON.stringify({id: this.id, content: 'online'}), {qos: 2});
                 });
 
                 this.client.on('message', (topic, message) => {
@@ -158,7 +158,7 @@
                         setSettings();
 
                         this.client.publish(this.channel_status, is.toString(), {qos: 2});
-                        this.client.publish('status', JSON.stringify({id: id, content: is.toString()}), {qos: 2});
+                        this.client.publish('status', JSON.stringify({id: this.id, content: is.toString()}), {qos: 2});
                     });
 
                 this.$store.watch((state) => state.data, (data) => this.client.publish(this.channel_data, JSON.stringify(data)));
@@ -169,6 +169,9 @@
 
             this.client.end();
             this.client = null;
+
+            this.server.close();
+            this.server = null;
         },
         methods: {
             start(event, value) {
