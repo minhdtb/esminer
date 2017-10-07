@@ -31,6 +31,8 @@ export default class Application {
     private minerProcess: Plugin;
 
     constructor() {
+        app.disableHardwareAcceleration();
+
         autoUpdater.logger = log;
 
         autoUpdater.on('update-downloaded', () => {
